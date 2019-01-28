@@ -1,0 +1,100 @@
+@import 'common'
+
+body
+    +bg-grad-horizontal
+    padding: 24px
+    padding-top: 0
+    overflow-x: hidden
+
+h1
+    font-weight: 300
+    font-size: 60px
+    padding: .8em
+    margin: 0
+    color: white
+    text-align: center
+    img
+        vertical-align: middle
+        transform: translateY(-4px)
+
+h2
+    font-weight: 500
+    font-size: 30px
+    margin: .7em 0
+
+h3
+    font-weight: 300
+    font-size: 24px
+
+a
+    color: $link-blue
+    &:focus, &:hover
+        +gradient-fill-text
+        text-decoration: underline
+        -webkit-text-decoration-color: $light-grey
+        text-decoration-color: $light-grey
+
+#content-box
+    &.big
+        width: 1300px
+    width: 700px
+    padding: 1.5em 3em
+    border-radius: 1em
+    background: white
+    max-width: 100%
+    position: relative
+    left: 50%
+    transform: translateX(-50%)
+    font-size: 16px
+
+#suggestor
+    position: fixed
+    top: 44px
+    right: 20px
+    color: white
+    font-size: 30px
+    font-weight: 500
+
+#arrow
+    position: fixed
+    top: 12px
+    right: 102px
+    width: 0
+    animation: arrow-anim .9s cubic-bezier(0.32, 0.37, 0.33, 0.93) infinite alternate // ease
+    &:before, &:after
+        content: ''
+        display: block
+        background-color: white
+        height: 6px
+        border-radius: 3px
+        width: 38px
+    &:before
+        transform: rotate(180deg - 28deg)
+        transform-origin: 1px 100%
+    &:after
+        transform: rotate(28deg)
+        transform-origin: 1px 0
+
+@keyframes arrow-anim
+    0%
+        transform: translateY(-12px)
+    100%
+        transform: translateY(0px)
+
+#boom
+    position: fixed
+    top: -300px
+    right: -150px + 102px
+    width: 300px
+    height: 300px
+    border-radius: 150px
+    background-color: white
+    animation: boom-anim .9s * 2 linear infinite
+
+@keyframes boom-anim
+    0%
+        opacity: 1
+        transform: translateY(0px)
+    15%, 100%
+        opacity: 0
+        transform: translateY(15px)

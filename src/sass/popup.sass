@@ -1,0 +1,1243 @@
+@import 'common'
+
+body, html
+    padding: 0
+    margin: 0
+    border: 0
+    height: fit-content
+
+body
+    background: $bg-main
+    &.enable-animations
+        #page-underliner
+            transition: left .2s, width .2s
+        #on-off-toggle .toggle
+            &:before
+                transition: background-color .3s, transform .3s
+                transition-timing-function: ease-in-out
+            &:after
+                transition: left .3s, border-color .3s
+                transition-timing-function: ease-in-out//cubic-bezier(0.15, 0.45, 0.85, 0.55)
+    &.show-disable-picker
+        #content
+            filter: blur(5px)
+        #disable-picker
+            display: flex
+    &.show-location-hint, &.show-temperature-hint, &.show-color-hint, &.show-new-tab-hint
+        #menu
+            filter: blur(5px)
+        #hints
+            display: flex
+    &.show-location-hint #location-hint, &.show-temperature-hint #temperature-hint, &.show-color-hint #color-hint, &.show-new-tab-hint #new-tab-hint
+        display: block
+    &.show-color-picker
+        #menu
+            filter: blur(5px)
+        #color-picker-container
+            display: flex
+    &.preview-shade
+        #temperature-graph-preview-text
+            opacity: 1
+        #temperature-when-text, #temperature-graph-preview-button, #temperature-graph-show-sliders-button
+            opacity: 0 !important
+            pointer-events: none
+    &.slider-mousedown
+        cursor: ew-resize
+        #content
+            pointer-events: none
+    &.classic-algorithm
+        #temperature-wakeup, .sleep-slider
+            display: none !important
+        #temperature-sliders-back
+            grid-row: 1/span 2
+        #temperature-when-text
+            height: 24px !important
+    &.show-temperature-sliders
+        #temperature-sliders
+            opacity: 1
+            pointer-events: all
+        #temperature-setting-selector-text, #temperature-setting-selector, #temperature-single-slider
+            opacity: 0
+    &.show-donate-button
+        .page-button-donate
+            display: block !important
+
+
+
+$color-picker-pointer-radius: 12px
+$color-picker-pointer-border-thickness: 3px
+#color-picker-container
+    display: none
+    position: absolute
+    justify-content: center
+    align-items: center
+    top: 0
+    right: 0
+    width: 100%
+    height: 100%
+    background-color: $hint-color-bg
+    user-select: none
+#color-picker
+    display: grid
+    grid-template-columns: auto auto
+    grid-column-gap: 1em
+    align-items: center
+    justify-items: center
+
+    height: fit-content
+    width: fit-content
+    canvas
+        grid-row: 1
+        grid-column: 1
+        filter: drop-shadow(0 0 5px rgba(black, .3))
+        border-radius: 1000px
+        cursor: crosshair
+    .buttons
+        grid-row: 1
+        grid-column: 2
+        display: grid
+        grid-auto-columns: 60px
+        grid-gap: 1em
+        padding: 0.2em
+    .pretty-input
+        font-size: 24px
+        text-align: center
+        padding: 0.2em
+#color-picker-add, #color-picker-set
+    grid-row: 1
+    grid-column: 1 / span 3
+#color-picker-cancel
+    grid-row: 4
+    grid-column: 1/span 3
+    margin: 0 15%
+#color-picker-canvas-hue
+    z-index: 1
+#color-picker-canvas-triangle
+    z-index: 2
+#color-picker-hue-pointer, #color-picker-triangle-pointer
+    grid-row: 1
+    grid-column: 1
+    z-index: 3
+    pointer-events: none
+    border-radius: $color-picker-pointer-radius
+    border: $color-picker-pointer-border-thickness solid $input-bg
+    box-shadow: 0 0 4px rgba(black, .6)
+#color-picker-triangle-pointer
+    width: $color-picker-pointer-radius
+    height: $color-picker-pointer-radius
+#color-picker-hue-pointer
+    width: $color-picker-pointer-radius * 3/2
+    height: $color-picker-pointer-radius / 2
+#color-picker-hex
+    grid-row: 2
+    grid-column: 1 / span 3
+#color-picker-red
+    grid-row: 3
+    grid-column: 1
+#color-picker-green
+    grid-row: 3
+    grid-column: 2
+#color-picker-blue
+    grid-row: 3
+    grid-column: 3
+
+
+
+
+
+
+#menu-container
+    position: relative
+
+#hints
+    display: none
+    position: absolute
+    justify-content: center
+    align-items: center
+    top: 0
+    right: 0
+    width: 100%
+    height: 100%
+    background-color: $hint-color-bg
+    flex-direction: column
+    .hint
+        display: none
+        width: 85%
+        height: fit-content
+        line-height: 1.6
+        color: white
+    a
+        color: $bg-2
+    p
+        padding-left: 1.5em
+        text-indent: -1.5em
+    h1
+        font-size: 18px
+        font-weight: normal
+
+.page
+    visibility: hidden
+    height: 0px
+    overflow: hidden
+    &.selected
+        padding: $page-padding
+        //padding-bottom: .2em
+        visibility: visible
+        height: initial
+        min-height: 200px
+        &[name='temperature']
+            padding: 0
+            padding-bottom: $page-padding
+            .show-hint
+                padding-left: $page-padding
+
+//.text-label
+//    margin: .4em 0
+
+
+$slider-height: 26px
+$slider-handle-diameter: $slider-height
+$slider-fill-height: 7px
+$slider-background-height: 5px
+.pretty-slider
+    height: $slider-height
+    width: calc(100% - 1em)
+    padding-left: 0.5em
+    position: relative
+    margin: $page-padding 0
+    input
+        z-index: 2
+        width: 100%
+        height: 100%
+        opacity: 0
+        cursor: ew-resize
+        position: absolute
+        padding: 0
+        margin: 0
+        &:hover, &:active
+            & + .fill .handle
+                box-shadow: 0 0 0 3px $button-hover-outline
+    .fill
+        z-index: 1
+        width: 40%
+        height: $slider-fill-height
+        position: absolute
+        top: ($slider-height - $slider-fill-height) / 2
+        border-radius: $slider-fill-height / 2
+        background-color: hsl(27, 10%, 50%)
+        .handle
+            position: absolute
+            right: 0
+            top: 50%
+            transform: translate(50%, -50%)
+            width: $slider-handle-diameter
+            height: $slider-handle-diameter
+            border-radius: $slider-handle-diameter / 2
+            transition: box-shadow 0.15s
+            +bg-grad-diagonal
+            box-shadow: 0 0 7px rgba(black, 0.2)
+            border: 1px solid $mix-bg-dark
+            box-shadow: 0 0 0 -1px $button-hover-outline
+            &:before
+                content: ''
+                position: absolute
+                top: 30%
+                left: 30%
+                width: 40%
+                height: 40%
+                border-radius: 1000px
+                background-color: $bg-main
+    .background
+        z-index: 0
+        width: 100%
+        height: $slider-background-height
+        position: absolute
+        top: ($slider-height - $slider-background-height) / 2
+        border-radius: $slider-background-height/ 2
+        background-color: hsl(27, 10%, 86%)
+
+.pretty-input
+    border-radius: 1000px
+    border: none
+    outline: none
+    background-color: $input-bg
+    color: $input-color
+    padding: .2em .8em
+    border: 1px solid $input-placeholder-color
+    &::placeholder
+        color: $input-placeholder-color
+    &:focus, &:hover
+        background-color: $input-bg-focus
+    &.incorrect
+        background-color: #e6a89b !important
+
+.pretty-button
+    +bg-grad-horizontal
+    outline: none
+    color: $bg-main
+    padding: .4em .8em
+    border-radius: 8px
+    font-size: 16px
+    //font-weight: bold
+    border: 1px solid $mix-bg-dark
+    box-shadow: 0 0 0 -1px $button-hover-outline
+    transition: box-shadow .15s
+    cursor: pointer
+    box-sizing: border-box
+    &:hover
+        box-shadow: 0 0 0 3px $button-hover-outline
+
+.pretty-checkbox
+    width: fit-content
+    display: inline-block
+    padding: .2em 0
+    vertical-align: bottomW
+    & > input
+        display: none
+        & + label
+            position: relative
+            display: flex
+            align-items: center
+            box-sizing: border-box
+            cursor: pointer
+            & > span
+                +bg-grad-diagonal
+                display: flex
+                box-sizing: border-box
+                justify-content: center
+                align-items: center
+                margin-right: 0.5em
+                width: 22px
+                height: 22px
+                border-radius: 4px
+                cursor: pointer
+                font-size: 1.4em
+                animation: checkbox-shrink-bounce 200ms cubic-bezier(0.4, 0, 0.23, 1)
+                user-select: none
+                transition: all 250ms cubic-bezier(0.4, 0, 0.23, 1)
+                box-shadow: 0 0 0px -1px rgba(100, 128, 235, 0.6)
+                border: 1px solid $mix-bg-dark
+            & > span:after
+                content: ""
+                width: 16px
+                height: 16px
+                background-color: $bg-main
+                border-radius: 0.1em
+                transition: all 250ms cubic-bezier(0.4, 0, 0.23, 1)
+        &:hover, &:focus
+            & + label > span
+                box-shadow: 0 0 0px 3px rgba(100, 128, 235, 0.6)
+        &:checked + label > span
+            &:after
+                width: 0
+                height: 0
+            &:before
+                content: ""
+                position: absolute
+                z-index: 2
+                top: 0.4em
+                left: 0.18em
+                border-right: 0.12em solid transparent
+                border-bottom: 0.12em solid transparent
+                transform: rotate(45deg)
+                transform-origin: 0% 100%
+                animation: checkbox-check 125ms 250ms cubic-bezier(0.4, 0, 0.23, 1) forwards
+
+.pretty-select
+    -webkit-appearance: none
+    appearance: none
+    outline: 0
+    cursor: pointer
+
+    font-weight: bold
+    color: $bg-main
+    padding: 0.3em 40px 0.3em 0.8em
+    margin: 0
+    border: 1px solid $mix-bg-dark
+    border-radius: .5em
+
+    background: url(/img/select-bg.png) no-repeat 96% 0, $bg-1
+    background: url(/img/select-bg.png) no-repeat 96% 0, linear-gradient(135deg, $bg-1, $bg-2)
+
+    box-shadow: 0 0 0px -1px $button-hover-outline
+    transition: box-shadow .15s
+    //background-color: #fff
+    //background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 13 24'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='9.31' y1='12.13' x2='9.91' y2='14.89' gradientTransform='matrix(0, 1, 1, 0, -6.5, 5.5)'/%3E%3C/svg%3E"), -webkit-gradient(linear,left top,left bottom,from(#312d3c),to(#17141d))
+    //background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 13 24'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='9.31' y1='12.13' x2='9.91' y2='14.89' gradientTransform='matrix(0, 1, 1, 0, -6.5, 5.5)'/%3E%3C/svg%3E"), linear-gradient(to bottom,#312d3c,#17141d)
+    //background-repeat: no-repeat, repeat
+    //background-position: right .7em top 50%, 0 0
+    //background-size: .65em auto, 100%
+    &:focus, &:hover
+        box-shadow: 0 0 0 3px $button-hover-outline
+    &:active, &:focus
+        background: url(/img/select-focus-bg.png) no-repeat 96% 0, $bg-1
+        background: url(/img/select-focus-bg.png) no-repeat 96% 0, linear-gradient(135deg, $bg-1, $bg-2)
+    option
+        font-weight: 400
+        color: black
+
+@keyframes checkbox-shrink-bounce
+    0%
+        transform: scale(1)
+    33%
+        transform: scale(0.8)
+    100%
+        transform: scale(1)
+
+@keyframes checkbox-check
+    0%
+        width: 0
+        height: 0
+        border-color: white
+        transform: translate(0, 0) rotate(45deg)
+    33%
+        width: 0.2em
+        height: 0
+        transform: translate(0, 0) rotate(45deg)
+    100%
+        width: 0.2em
+        height: 0.5em
+        border-color: white
+        transform: translate(0, -0.5em) rotate(45deg)
+
+
+
+/* #region header */
+
+#header
+    width: 100%
+    //height: 42px
+    display: grid
+    grid-template-columns: 432px 140px
+    grid-auto-rows: 1fr
+    grid-column-gap: 2px
+
+    +bg-grad-horizontal
+    font-size: 18px
+    font-weight: normal
+    color: white
+    user-select: none
+
+#logo
+    grid-column: 1
+    text-align: center
+    font-size: 24px
+    padding: 7px 14px
+    color: inherit
+    text-decoration: none
+    .icon
+        clip-rule: evenodd
+        stroke-linejoin: round
+        display: inline-block
+        width: 1em
+        vertical-align: middle
+        transform: translateY(-0.1em)
+        fill: none
+        stroke: white
+        stroke-width: 2px
+
+#page-menu
+    grid-column: 1
+    background-image: linear-gradient(to right, $bg-accentuate 0%, $bg-accentuate 92%, rgba($bg-accentuate, 0) 100%)
+    position: relative
+#page-buttons
+    display: flex
+    justify-content: center
+    align-items: center
+    font-weight: bold
+    position: absolute
+    width: 100%
+    height: 100%
+    .page-button
+        padding: 0 $page-padding / 5
+        opacity: .7
+        cursor: pointer
+        &.selected
+            opacity: 1 !important
+        &:hover
+            opacity: .85
+    .page-button-donate
+        display: none
+        padding: $page-padding / 4 $page-padding / 5
+        border-radius: $page-padding / 3
+        color: rgba(white, .7)
+        align-items: center
+        background-color: rgba(white, 0)
+        box-shadow: 0 0 4px 25px rgba(white, 0), 0 0 0px 0px rgba(white, 0)
+        text-decoration: none
+        transition: .2s
+        &:hover
+            background-color: rgba(white, .9)
+            color: mix($bg-1, $bg-2, 50%)
+            box-shadow: 0 0 0px 0px rgba(white, .9), 0 0 10px 3px rgba(white, .5)
+
+#page-underliner
+    background: white
+    pointer-events: none
+    width: 0px
+    height: 3px
+    border-radius: 3px 3px 0 0
+    position: absolute
+    bottom: 0px
+    left: 0px
+
+$on-off-toggle-height: 14px
+$on-off-toggle-width: 38px
+$on-off-toggle-diameter: 22px
+$on-off-toggle-color-on: mix(black, $bg-2, 25%)
+$on-off-toggle-color-off: mix(black, $bg-2, 40%)
+
+$on-off-diff: ($on-off-toggle-height - $on-off-toggle-diameter) / 2
+#on-off-toggle
+    grid-column: 2
+    grid-row: 1 / span 2
+    position: relative
+    overflow: hidden
+    width: 130px
+    text-align: right
+    padding-right: 10px
+    cursor: pointer
+    &:before
+        display: block
+        position: absolute
+        content: ''
+        z-index: 0
+        top: -50%
+        left: 0
+        width: 100%
+        height: 200%
+        background: $bg-accentuate
+        border-radius: 1000px 0 0 1000px
+    & > *
+        z-index: 1
+        position: relative
+        top: 50%
+        transform: translateY(-50%)
+        vertical-align: top
+    .text
+        display: inline-block
+        white-space: pre
+    .small-text
+        font-size: 13px
+        line-height: 1.1
+    .cant-work-text
+        display: none
+    .toggle
+        display: inline-block
+        width: $on-off-toggle-width
+        height: $on-off-toggle-height
+        margin: 0 2px
+        border-radius: $on-off-toggle-height
+        background-color: $on-off-toggle-color-off
+        &:after
+            content: ''
+            border-radius: 50%
+            position: absolute
+            display: block
+            background-color: #fafafa
+            top: $on-off-diff
+            left: $on-off-diff
+            width: $on-off-toggle-diameter
+            height: $on-off-toggle-diameter
+            border: 2px solid $on-off-toggle-color-off
+            box-sizing: border-box
+    &:hover .text
+        opacity: .8
+    &.enabled
+        .toggle
+            background-color: $on-off-toggle-color-on
+            &:after
+                left: $on-off-toggle-width - $on-off-toggle-diameter - $on-off-diff
+                border-color: $on-off-toggle-color-on
+        &.cant-work
+            .cant-work-text
+                display: inline-block
+            .primary-text, .toggle
+                display: none
+
+/* #endregion */
+
+
+/* #region Temperature page */
+
+#temperature-top-menu
+    display: grid
+    grid-template-rows: 30px 60px
+    grid-template-columns: auto min-content
+    grid-row-gap: $page-padding * 1.5
+    align-items: center
+    margin: $page-padding
+    margin-bottom: 0
+
+#temperature-setting-selector-text
+    grid-row: 1
+    grid-column: 1
+
+#temperature-setting-selector
+    grid-row: 1
+    grid-column: 2
+
+#temperature-single-slider
+    grid-row: 2
+    grid-column: 1/span 2
+
+#temperature-sliders
+    grid-row: 1/span 2
+    grid-column: 1/span 2
+    opacity: 0
+    pointer-events: none
+    display: grid
+    grid-template-columns: min-content min-content auto
+    grid-auto-rows: 1fr
+    grid-gap: .4em
+    align-items: center
+    z-index: 1
+    & > *
+        margin: 0 !important
+
+#temperature-sliders-back
+    grid-row: 1/span 3
+    grid-column: 1
+    cursor: pointer
+    //background-color: mix($bg-main, $input-bg, 60%)
+    //border: 1px solid mix($bg-main, $input-placeholder-color, 60%)
+    justify-self: stretch
+    align-self: center
+    border-radius: 4px // 10px
+    padding: 0
+    height: 32px
+    width: 20px
+    position: relative
+    &:before
+        content: ''
+        width: 8px
+        height: 8px
+        position: absolute
+        border: 2px solid white
+        border-bottom-width: 0px
+        border-right-width: 0px
+        top: 50%
+        left: 50%
+        transform: translate(-20%, -50%) rotate(-45deg) skew(5deg, 5deg)
+
+#temperature-setting-selector-text, #temperature-setting-selector, #temperature-single-slider, #temperature-sliders
+    transition: opacity .2s
+
+
+#temperature-when-text
+    text-align: center
+    font-size: 20px
+    line-height: 24px
+    height: 48px
+    margin-top: $page-padding * .6
+    margin-bottom: $page-padding
+    opacity: 1
+    transition: opacity .6s
+    white-space: pre
+
+#temperature-graph
+    user-select: none
+    position: relative
+    margin-bottom: $page-padding * .6
+    &:hover
+        #temperature-graph-preview-button, #temperature-graph-show-sliders-button
+            opacity: 1
+
+#temperature-graph-text
+    position: absolute
+    color: #444
+    font-size: 11px
+    bottom: 4px
+    left: 10px
+
+#temperature-graph-preview-button, #temperature-graph-show-sliders-button
+    position: absolute
+    left: 50%
+    transform: translateX(-50%)
+    background-color: #d04242 // #d66a6a
+    box-shadow: 0 0 20px rgba(black, .3)
+    color: white
+    height: 30px
+    line-height: 30px
+    text-align: center
+    border-radius: .2em
+    opacity: 0
+    transition: opacity .2s
+    cursor: pointer
+
+#temperature-graph-show-sliders-button
+    top: 15px
+    width: 210px
+
+#temperature-graph-preview-button
+    top: 55px
+    width: 268px
+
+#temperature-graph-preview-text
+    position: absolute
+    top: -14px
+    left: 50%
+    color: rgba(black, 0.6)
+    font-size: 24px
+    transform: translate(-50%, -100%)
+    pointer-events: none
+    opacity: 0
+    transition: opacity .6s
+
+#temperature-graph-preview-time-text
+    display: inline-block
+    width: 3em
+    white-space: nowrap
+    margin-left: .2em
+    font-size: 30px
+    transform: translateY(2px)
+
+#temperature-graph-offset
+    .region
+        &.day
+            fill: #8EBBFF // #a8bdeb // #F3CE70
+        &.night
+            fill: #FFCC73 // #90AFF0
+        &.sleep
+            fill: #FF633D // #e9815c // #a178ed
+    .line-bottom
+        fill: black
+        opacity: .3
+
+#temperature-graph-fill
+    fill: url(#temperature-graph-fill-gradient)
+    stroke: black
+    stroke-opacity: .4//0.3
+    stroke-width: 1px
+    opacity: .6
+
+#temperature-graph-sine-wave
+    stroke: white
+    stroke-width: 2px
+    fill: url(#temperature-graph-sine-wave-gradient)
+
+#temperature-graph-sun
+    circle:nth-child(1)
+        opacity: .7
+        mix-blend-mode: multiply
+    circle:nth-child(2)
+        stroke: black
+        stroke-opacity: 0.3
+        stroke-width: 1px
+
+#temperature-graph-cover
+    fill: url(#temperature-graph-cover-gradient)
+
+#temperature-graph-cover-gradient
+    stop
+        stop-color: $bg-main
+        &:nth-child(2), &:nth-child(3)
+            stop-color: rgba($bg-main, 0)
+
+$wakeup-height: 32px
+#temperature-wakeup
+    margin: $page-padding * 1.2 0
+    display: flex
+    align-items: center
+    justify-content: center
+    .buttons
+        user-select: none
+        +bg-grad-horizontal
+        border-radius: 4px
+        border: 1px solid $mix-bg-dark
+        box-shadow: 0 0 0 -1px $button-hover-outline
+        width: 18px
+        height: $wakeup-height
+        margin: 0 .5em
+        position: relative
+        overflow: hidden
+        transition: box-shadow 0.15s
+        &:hover
+            box-shadow: 0 0 0 3px $button-hover-outline
+
+#temperature-wakeup-up-button, #temperature-wakeup-down-button
+    position: absolute
+    left: 0
+    width: 100%
+    height: 50%
+    outline: none
+    border: none
+    background: none
+    cursor: pointer
+    &:before
+        display: block
+        content: ''
+        position: absolute
+        left: 4px
+        width: 0
+        height: 0
+        border: 5px solid transparent
+    &:hover
+        background-color: rgba($bg-main, .3)
+
+#temperature-wakeup-up-button
+    top: 0
+    &:before
+        top: 1px
+        border-bottom-color: white
+    
+#temperature-wakeup-down-button
+    bottom: 0
+    &:before
+        bottom: 1px
+        border-top-color: white
+
+#temperature-wakeup-time
+    font-size: 18px
+    width: 110px
+    text-align: center
+    padding: 0
+    height: $wakeup-height + 2px
+
+#show-temperature-hint
+    padding-right: $page-padding
+
+
+/* #endregion */
+
+
+/* #region colors page */
+
+$color-checkbox-width: 20px * .6
+$color-checkbox-height: 50px * .6
+$color-checkbox-thickness: 8px
+$color-checkbox-translate: translate(0, -$color-checkbox-height) // translate(-10px, 24px)
+$add-new-color-border: #adadad
+$delete-color-bg: #e95e5e
+$edit-color-bg: #5ee990
+
+#color-choices
+    display: grid
+    grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)) // https://codepen.io/krystof-k/pen/vdNQGB
+    grid-gap: 20px
+    margin: $page-padding 0 $page-padding $page-padding / 2
+    grid-auto-rows: 1fr
+    &:before
+        content: ''
+        padding-bottom: 100%
+        grid-row: 1
+        grid-column: 1
+    & > *:first-child
+        grid-row: 1
+        grid-column: 1
+    & > *:nth-child(n+19) // Hide any color beyond 18
+        display: none
+    .add-new
+        position: relative
+        border: 2px solid $add-new-color-border !important
+        margin: 0px
+        transition: margin .15s
+        border-radius: 1000px
+        background-image: linear-gradient(135deg, rgba(white, 0.1), rgba(black, 0.1))
+        &:hover
+            margin: 3px
+        &:before, &:after
+            content: ''
+            display: block
+            position: absolute
+            top: 50%
+            left: 50%
+            transform: translate(-50%, -50%)
+            width: 20px
+            height: 2px
+            background-color: $add-new-color-border
+        &:after
+            transform: translate(-50%, -50%) rotate(90deg)
+    .color
+        position: relative
+    .selected .fill:before
+        content: ''
+        position: absolute
+        top: 50%
+        left: 50%
+        margin-left: -20px
+        margin-top: -4px
+        border-right: $color-checkbox-thickness solid transparent
+        border-bottom: $color-checkbox-thickness solid transparent
+        transform-origin: 0% 100%
+        filter: drop-shadow(0 0 7px rgba(black, .2))
+        animation: color-choices-check .15s .1s cubic-bezier(0.4, 0, 0.23, 1) forwards
+    .fill
+        border-radius: 1000px
+        box-sizing: border-box
+        position: absolute
+        top: 0
+        left: 0
+        width: 100%
+        height: 100%
+        cursor: pointer
+        background-image: linear-gradient(135deg, rgba(white, 0.1), rgba(black, 0.1))
+        border: 0px solid $bg-main
+        transition: border-width .15s, background-color .4s .2s
+        &:hover
+            border-width: 3px
+    .edit, .delete
+        position: absolute
+        top: -0.2em
+        width: 1.25em
+        height: 1.25em
+        border-radius: 1.25em
+        cursor: pointer
+        border: 2px solid $bg-main
+        transition: background-color .15s
+        &:hover
+            background-color: $bg-main
+    .edit
+        left: -0.2em
+        background-color: $edit-color-bg
+        box-shadow: inset 0 0 0 1px $edit-color-bg
+        &:hover:before
+            color: $edit-color-bg
+        &:before
+            font-size: 12px
+            font-weight: bold
+            content: 'E'
+            display: block
+            position: absolute
+            top: 50%
+            left: 50%
+            transform: translate(-60%, -50%)
+            color: $bg-main
+            transition: color .15s
+    .delete
+        right: -0.2em
+        background-color: $delete-color-bg
+        box-shadow: inset 0 0 0 1px $delete-color-bg
+        &:hover
+            &:before, &:after
+                background-color: $delete-color-bg
+        &:before, &:after
+            content: ''
+            display: block
+            position: absolute
+            top: 50%
+            left: 50%
+            transform: translate(-50%, -50%) rotate(45deg)
+            width: .8em
+            height: 2px
+            background-color: $bg-main
+            transition: background-color .15s
+        &:after
+            transform: translate(-50%, -50%) rotate(135deg)
+
+@keyframes color-choices-check
+    0%
+        width: 0
+        height: 0
+        transform: translate(0, 0) rotate(45deg)
+        border-color: $bg-main
+    33%
+        width: $color-checkbox-width
+        height: 0
+        transform: translate(0, 0) rotate(45deg)
+    100%
+        width: $color-checkbox-width
+        height: $color-checkbox-height
+        transform: $color-checkbox-translate rotate(45deg)
+        border-color: $bg-main
+
+  
+/* #endregion */
+ 
+
+/* #region location page */
+
+$location-search-bg: #f7f7f7
+#location-search-container
+    height: 32px
+#location-search
+    width: 100%
+    background-color: $input-bg
+    border-radius: 16px
+    position: relative
+    overflow: hidden
+    z-index: 10
+    border: 1px solid $input-placeholder-color
+    &.focused
+        background-color: $location-search-bg !important
+        border: 1px solid $location-search-bg
+        box-shadow: 0 0 10px rgba(black, 0.2)
+        #location-results
+            display: block
+        #location-results:empty + .no-locations-found
+            display: block
+        .underliner
+            display: block
+        input
+            text-align: center
+            &::placeholder
+                color: transparent
+        #location-search-icon
+            display: none
+    &:hover
+        background-color: $input-bg-focus
+    input
+        width: 100%
+        background: none
+        border: none
+        outline: none
+        font-size: 20px
+        height: 32px
+        padding: 0 .7em
+        color: $input-color
+        &::placeholder
+            color: $input-placeholder-color
+    #location-search-icon
+        fill-rule: evenodd
+        height: 70%
+        position: absolute
+        right: 6px
+        top: 50%
+        transform: translateY(-50%)
+        pointer-events: none
+        linearGradient
+            stop:nth-child(1)
+                stop-color: rgb(236,173,101)
+            stop:nth-child(2)
+                stop-color: rgb(232,113,89)
+    .underliner
+        display: none
+        +bg-grad-horizontal
+        height: 3px
+        border-bottom-left-radius: 21px
+        border-bottom-right-radius: 21px
+        width: 0px
+        margin: 0 auto
+    #location-results
+        display: none
+        padding: 0 .7em .5em .7em
+        margin: 0
+        list-style: none
+        li
+            cursor: pointer
+            transition: padding-left .15s
+            &.select
+                font-weight: bold
+                +gradient-fill-text
+                width: fit-content
+                padding-left: .4em
+    .no-locations-found
+        font-weight: bold
+        +gradient-fill-text
+        padding-bottom: .4em
+        display: none
+        text-align: center
+
+#location-row
+    display: grid
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr))
+    //grid-auto-rows: 1fr
+    grid-column-gap: $page-padding
+    margin-top: $page-padding
+
+#location-autofind
+    grid-column: auto / span 2
+    span:nth-child(2)
+        display: none
+    &.fetching
+        pointer-events: none
+        filter: brightness(.95)
+        span:nth-child(1)
+            display: none
+        span:nth-child(2)
+            display: initial
+
+#location-lat, #location-lon
+    font-size: 20px
+    text-align: center
+
+#location-lat
+    grid-column: auto 3
+
+#location-lon
+    grid-column: auto 4
+
+#location-name
+    color: $darker-text
+    font-weight: bold
+    margin: $page-padding * .8 0
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
+    width: 536px
+
+$location-map-bg: linear-gradient(155deg, hsla(195, 46%, 64%, 1), hsla(214, 59%, 57%, 1)) // linear-gradient(155deg, #56ccf2, #2f80ed)
+$location-map-pointer-fill: #26163a
+#location-map
+    position: relative
+    height: 208px // Height of map picture
+    width: 100%
+    min-width: 536px // Width of map picture
+    background: $location-map-bg
+    border-radius: 10px
+    user-select: none
+    cursor: crosshair
+    overflow: hidden
+    //border: 1px solid $location-map-pointer-fill
+    box-sizing: border-box
+    margin-bottom: $page-padding
+    .image
+        position: absolute
+        top: 0
+        left: 0
+        width: 100%
+        height: 100%
+        background: url(/img/map.png)
+        filter: drop-shadow(0 0 10px rgba(0, 0, 0, .1))
+        z-index: 1
+#location-map-pointer
+    position: absolute
+    width: 80px
+    height: 80px
+    z-index: 2
+    transform: translate(-50%, -50%)
+    &>circle
+        fill: $location-map-pointer-fill
+        transform-origin: center
+        opacity: 0
+        animation-timing-function: cubic-bezier(0.14, 0.63, 0.46, 1.57) !important
+    &>circle:nth-child(1)
+        fill-opacity: 0.05
+        animation-delay: .2s
+    &>circle:nth-child(2)
+        fill-opacity: 0.05
+        animation-delay: .4s
+    &>circle:nth-child(3)
+        fill-opacity: 0.1
+        animation-delay: .6s
+    &>circle:nth-child(4)
+        fill-opacity: 0.2
+        animation-delay: .8s
+    &>.pointer
+        transform-origin: center
+        opacity: 0
+        &>path
+            fill: $location-map-pointer-fill
+        &>circle
+            fill: $bg-main
+    &.move-animate
+        &>circle
+            animation-name: map-pointer-circles
+            animation-duration: .4s
+            animation-fill-mode: forwards
+        &>.pointer
+            animation-name: map-pointer
+            animation-duration: .4s
+            animation-fill-mode: forwards
+
+@keyframes map-pointer
+    from
+        opacity: 0
+        transform: translate(5px, -15px) rotate(60deg) scale(2)
+        //transform: translateY(-10px)
+    to
+        opacity: 1
+        transform: translate(0px, 0px) rotate(0deg) scale(1)
+        //transform: translateY(0px)
+
+@keyframes map-pointer-circles
+    from
+        opacity: 0
+        transform: scale(0)
+        //transform: translateY(-10px)
+    to
+        opacity: 1
+        transform: scale(1)
+        //transform: translateY(0px)
+
+/* #endregion */
+
+
+
+/* #region settings */
+
+#settings
+    display: grid
+    grid-template-columns: auto min-content
+    //grid-auto-rows: 1fr
+    grid-gap: $page-padding
+    align-items: center
+    padding-bottom: $page-padding
+    .pretty-checkbox, .pretty-button
+        grid-column: span 2
+        justify-self: center
+    
+#settings-reset-settings
+    span:nth-child(2)
+        display: none
+    &.click-again
+        span:nth-child(1)
+            display: none
+        span:nth-child(2)
+            display: initial
+
+/* #endregion */
+
+
+#copyright
+    font-weight: bold
+    +gradient-fill-text
+    text-align: center
+    display: block
+    margin-bottom: $page-padding / 5
+    span
+        color: black
+        -webkit-text-fill-color: black
+
+.show-hint
+    cursor: pointer
+    //float: right
+    text-decoration: underline
+    cursor: pointer
+    text-decoration: underline
+    text-align: center
+
+#disable-picker
+    display: none
+    position: absolute
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+    background: $hint-color-bg
+    user-select: none
+    font-size: 18px
+    justify-content: center
+    align-items: center
+
+#disable-picker-inner
+    background: $bg-main
+    color: black
+    display: grid
+    grid-template-columns: 150px 250px
+    grid-auto-rows: auto
+    height: fit-content
+    grid-gap: $page-padding
+    border-radius: $page-padding
+    padding: $page-padding
+    h1
+        font-size: 20px
+        margin: 0
+        padding: 0
+        text-align: center
+    .hidden
+        display: none
+    & > *
+        grid-column: 1/span 2
+
+#disable-for-time-button, #disable-on-website-button
+    grid-column: 1
+
+#disable-for-time-input, #disable-on-website-input
+    grid-column: 2
+    text-align: center
+
+#disable-cancel-button
+    justify-self: center
+
+

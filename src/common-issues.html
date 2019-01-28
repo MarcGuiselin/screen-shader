@@ -1,0 +1,46 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Common Issues - Screen Shader</title>
+        <link rel="stylesheet" href="css/page.css">
+    </head>
+    <body>
+        <h1>
+            <img src="img/logo-install.png"/>
+            Screen Shader - Common Issues
+        </h1>
+        <div id="content-box" class="big">
+            <h2>Not working on the new tab page?</h2>
+            <p>
+                Unfortunately chrome extension permissions prevent Screen Shader from shading the new tab, &#x1F622; however, installing the
+                <a href="https://chrome.google.com/webstore/detail/ogggehcanmknkicaiilbajdafalhlejm">Screen Shader Dark Theme</a>
+                or any other 
+                <a href="https://chrome.google.com/webstore/category/collection/dark_themes">dark theme</a>
+                from the chrome web store will change the new tab to a color that isn't bright white! &#x1F60E;
+            </p>
+            <h2>White flash?</h2>
+            <p>
+                Sometimes when switching tabs chrome might flash bright white as it loads the page. &#x1F615;
+                Screen Shader tries to shade the page as soon as possible, but often the browser is too slow and the result is that the screen flashes white between changing tabs.
+                This can be fixed by installing the
+                <a href="https://chrome.google.com/webstore/detail/ogggehcanmknkicaiilbajdafalhlejm">Screen Shader Dark Theme</a>
+                which changes that white color to black. &#x26F1;
+            </p>
+            <h2>Not working in incognito?</h2>
+            <p>
+                Chrome extensions are disabled by default in incognito mode. If you'd like Screen Shader or any other extension to work you can go to the
+                <a href="chrome://extensions/">chrome://extensions/</a> page, click on Screen Shader and check "Allow in incognito."
+            </p>
+            <h2>Screen Shader slowing down chrome or pixelating part of the page?</h2>
+            <p>
+                Click on the Screen Shader icon, navigate to the "Settings" page and change "Color Blending Algorithm" to "Opacity".
+                This shading algorithm is the fastest to compute and will use less processing power than the others at the expense of looking worse. &#x23F3;
+            </p>
+            <h2>Can't scroll?</h2>
+            <p>
+                The scrolling issue on pdfs and other imbedded items was a bug in chrome that was fixed. Update chrome to version 72 or above.
+            </p>
+        </div>
+        <script src="scripts/content.js"></script>
+    </body>
+</html>

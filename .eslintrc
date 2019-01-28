@@ -1,0 +1,49 @@
+{  
+    "extends": [
+        "eslint:recommended"
+    ],
+    "parser": "babel-eslint",
+    "parserOptions": {
+        "ecmaVersion": 8,
+        "ecmaFeatures": {  
+            "modules": true
+        }
+    },
+    "env": {
+        "browser": true
+    },
+    "globals": {
+        "chrome": true,
+        "module": true
+    },
+    "rules": {
+        "block-scoped-var": 2,
+        "capitalized-comments": 1,
+        "curly": 0,
+        "eqeqeq": 0,
+        "no-console": 0,
+        "no-constant-condition": 0,
+        "no-alert": 2,
+        "no-empty": 0,
+        "no-empty-function": 1,
+        "no-extend-native": 2,
+        "no-extra-bind": 1,
+        "no-implied-eval": 2,
+        "no-invalid-this": 1,
+        "no-iterator": 1,
+        "no-labels": 1,
+        "no-lone-blocks": 1,
+        "no-loop-func": 0,
+        "no-new": 1,
+        "no-new-func": 1,
+        "no-new-wrappers": 1,
+        "no-useless-escape": 1,
+        "no-unused-vars": [2, { "varsIgnorePattern": "_" }],
+        "quotes": [1, "single", {"avoidEscape": true}],
+        "spaced-comment": [1, "always", { "exceptions": ["TODO", "-"] }],
+        "strict": 2,
+        "yoda": [1, "never"],
+        "no-inner-declarations": 0,
+        "no-cond-assign": 0
+    }
+}

@@ -1,0 +1,48 @@
+// linear-gradient(to right, #373b44, #4286f4)
+// linear-gradient(to right, #f12711, #f5af19)
+// linear-gradient(to right, #fdc830, #f37335)
+// linear-gradient(to right, #fc4a1a, #f7b733)
+    
+    
+$bg-1: hsl(32, 78%, 66%) //hsl(32, 87%, 53%) //#FCDE7A //#F6BF7E//#FBB380//hsl(37, 49, 64)
+$bg-2: hsl(10, 76%, 63%) //hsl(10, 71%, 61%) //#FF8432 //#FF9884//#FEA582//hsl(25, 54, 66)
+$bg-accentuate: rgba(black, .06)
+$bg-main: hsl(27, 10%, 96%)
+
+$link-blue: #35bece
+$light-grey: #BBB
+
+$input-bg: hsl(27, 10%, 92%)
+$input-bg-focus: hsl(27, 10%, 88%)
+$input-color: hsl(27, 10%, 20%)
+$input-placeholder-color: hsl(27, 10%, 75%)
+
+$darker-text: hsl(27, 10%, 33%)
+
+$mix-bg-dark: #844C40 //mix(black, lighten(mix($bg-1, $bg-2, 50%), 10%), 25%)//mix(black, mix($bg-1, $bg-2, 50%), 40%)
+$button-hover-outline: #9EAFEF //rgba(100, 128, 235, .6)
+
+$hint-color-bg: rgba(56, 56, 56, 0.85)
+
+$page-padding: 1em
+
+=bg-grad-horizontal
+    background: $bg-1
+    background: linear-gradient(to right, $bg-1, $bg-2)
+
+=gradient-fill-text
+    color: $bg-main
+    background: mix(black, $bg-1, 10%)
+    background: linear-gradient(to right, mix(black, $bg-1, 15%), mix(black, $bg-2, 15%))
+    -webkit-background-clip: text
+    -webkit-text-fill-color: transparent
+
+=bg-grad-diagonal
+    background: $bg-1
+    background: linear-gradient(135deg, $bg-1, $bg-2)
+
+
+@import url('https://fonts.googleapis.com/css?family=Raleway:300,500,700')
+body, input, select
+    font-family: 'Raleway', sans-serif
+    font-size: 16px

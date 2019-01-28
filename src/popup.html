@@ -1,0 +1,352 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Screen Shader</title>
+        <link rel="stylesheet" href="css/popup.css">
+    </head>
+    <body>
+        <div id="content">
+            <!-- Header -->
+            <div id="header">
+                <a id="logo" href="https://bit.ly/screen-shader" target="_blank" title="Go to Screen Shader on the chrome webstore">
+                    <svg class="icon" viewBox="0 0 30 30">
+                        <path d="M24.3 5.7C26.5 7.9 28.2 11.4 28.2 15C28.2 18.5 27.2 21.7 24.8 24.1C22.4 26.6 18.7 28.1 13.5 28.2C12.8 28.2 12.1 28.3 11.3 28.3C8 28.3 5.8 27.4 4.2 25.8C2.6 24.2 1.7 22 1.7 18.6C1.7 17.9 1.7 17.1 1.8 16.4C1.9 11.3 3.4 7.6 5.9 5.2C8.2 2.8 11.4 1.7 14.9 1.7C18.6 1.7 22.1 3.4 24.3 5.7z M22.6 25.8C17.7 20.9 13.1 13.5 6.7 13.5C4.8 13.5 3.2 14.1 1.8 15.2 M9.9 14.1C10.4 11.7 12.5 9.9 15 9.9C17.8 9.9 20.1 12.2 20.1 15C20.1 17.1 18.9 18.9 17.1 19.7"/>                        
+                    </svg>                    
+                    Screen Shader
+                </a>
+                <div id="page-menu">
+                    <div id="page-buttons">
+                        <div class="page-button" name="temperature">
+                            Shade
+                        </div>
+                        <div class="page-button" name="colors">
+                            Colors
+                        </div>
+                        <div class="page-button" name="location">
+                            Location
+                        </div>
+                        <div class="page-button" name="settings">
+                            Settings
+                        </div>
+                        <a href="https://bit.ly/screen-shader-donate" target="_blank" class="page-button-donate">
+                            Donate
+                        </a>
+                    </div>
+                    <div id="page-underliner"></div>
+                </div>
+                <div id="on-off-toggle">
+                    <span class="text cant-work-text small-text">Screen Shader can't<br>work on this page</span>
+                    <span class="text primary-text"></span>
+                    <div class="toggle"></div>
+                </div>
+            </div>
+            <!-- Menus -->
+            <div id="menu-container">
+                <div id="menu">
+                    <!-- Temperature page -->
+                    <div class="page" name="temperature">
+                        <div id="temperature-top-menu">
+                            <div id="temperature-setting-selector-text">Select a preset or drag the slider</div>
+                            <select id="temperature-setting-selector" class="pretty-select">
+                                <option value="recommended">Recommended Shade</option>
+                                <option value="eye-strain">Reduced Eye Strain</option>
+                                <option value="working-late">Working Late</option>
+                                <option value="warmest">Cave Dweller</option>
+                                <option value="coldest">Sun Lover</option>
+                                <option value="classic">Classic (Night and Day)</option>
+                                <option value="custom" hidden>Custom Shade</option>
+                            </select>
+                            <div id="temperature-single-slider" class="pretty-slider">
+                                <input id="temperature-single-slider-input" type="range" min="0" max="500"/>
+                                <div id="temperature-single-slider-fill" class="fill">
+                                    <div class="handle"></div>
+                                </div>
+                                <div class="background"></div>
+                            </div>
+                            <div id="temperature-sliders">
+                                <div id="temperature-sliders-back" class="pretty-button"></div>
+
+                                <div class="text-label">Daytime</div>
+                                <div class="pretty-slider">
+                                    <input id="shade-day-slider-input" type="range" min="0" max="500"/>
+                                    <div id="shade-day-slider-fill" class="fill">
+                                        <div class="handle"></div>
+                                    </div>
+                                    <div class="background"></div>
+                                </div>
+    
+                                <div class="text-label">Night</div>
+                                <div class="pretty-slider">
+                                    <input id="shade-night-slider-input" type="range" min="0" max="500"/>
+                                    <div id="shade-night-slider-fill" class="fill">
+                                        <div class="handle"></div>
+                                    </div>
+                                    <div class="background"></div>
+                                </div>
+    
+                                <div class="text-label sleep-slider">Bedtime</div>
+                                <div class="pretty-slider sleep-slider">
+                                    <input id="shade-sleep-slider-input" type="range" min="0" max="500"/>
+                                    <div id="shade-sleep-slider-fill" class="fill">
+                                        <div class="handle"></div>
+                                    </div>
+                                    <div class="background"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="temperature-when-text">Sunset in 3 hours</div>
+                        <div id="temperature-graph">
+                            <div id="temperature-graph-text">Circadian Response: </div>
+                            <div id="temperature-graph-preview-text">
+                                Shade Preview<span id="temperature-graph-preview-time-text"></span>
+                            </div>
+                            <div id="temperature-graph-show-sliders-button">Click to show all sliders</div>
+                            <div id="temperature-graph-preview-button">Double click for Shade Preview</div>
+                            <svg width="574" viewBox="0 0 574 100">
+                                <path id="temperature-graph-sine-wave" d="M 0 100L 0 90C 143.5 90, 143.5 10, 287 10C 430.5 10, 430.5 90, 574 90C 717.5 90, 717.5 10, 861 10C 1004.5 10, 1004.5 90, 1148 90C 1291.5 90, 1291.5 10, 1435 10C 1578.5 10, 1578.5 90, 1722 90L 1722 100"/>
+                                <g id="temperature-graph-offset">
+                                    <path id="temperature-graph-fill"/>
+                                    <rect class="line-bottom" x="0" y="96" width="1200" height="2"/>
+                                    <rect class="region night" x="0" y="97" width="1200" height="4"/>
+                                    <rect id="temperature-graph-region-day-1" class="region day" x="0" y="97" width="0" height="4"/>
+                                    <rect id="temperature-graph-region-day-2" class="region day" x="0" y="97" width="0" height="4"/>
+                                    <rect id="temperature-graph-region-day-3" class="region day" x="0" y="97" width="0" height="4"/>
+                                    <rect id="temperature-graph-region-sleep-1" class="region sleep" x="0" y="97" width="0" height="4"/>
+                                    <rect id="temperature-graph-region-sleep-2" class="region sleep" x="0" y="97" width="0" height="4"/>
+                                </g>
+                                <g id="temperature-graph-sun">
+                                    <circle cx="287" cy="0" r="12"/>
+                                    <circle cx="287" cy="0" r="9"/>
+                                </g>
+                                <rect id="temperature-graph-cover" width="574" height="100"/>
+                                <defs>
+                                    <linearGradient id="temperature-graph-fill-gradient" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox"></linearGradient>
+                                    <linearGradient id="temperature-graph-cover-gradient" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+                                        <stop offset="0"/>
+                                        <stop offset=".03"/>
+                                        <stop offset=".97"/>
+                                        <stop offset="1"/>
+                                    </linearGradient>
+                                    <linearGradient id="temperature-graph-sine-wave-gradient" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+                                        <stop offset="0" stop-color="rgba(0, 0, 0, .04)"/>
+                                        <stop offset=".3" stop-color="rgba(0, 0, 0, .015)"/>
+                                        <stop offset="1" stop-color="rgba(0, 0, 0, 0)"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+                        <div id="temperature-wakeup">
+                            <input id="temperature-wakeup-time" class="pretty-input" maxlength="10"/>
+                            <div class="buttons">
+                                <button id="temperature-wakeup-up-button"></button>
+                                <button id="temperature-wakeup-down-button"></button>
+                            </div>
+                            <div>is my earliest wake time.</div>
+                        </div>
+                        <div id="show-temperature-hint" class="show-hint">How does Screen Shader Work?</div>
+                        <!-- You've been using Screen Shader for 2 months! Consider leaving a review or Donating!
+                        <br/>
+                        Thanks for your donation
+                        <br/>
+                        Owww! The new tab page is a bright white! How do I fix that? -->
+                    </div>
+                    <!-- Colors page -->
+                    <div class="page" name="colors">
+                        <div class="text-label"><b>Darkness</b> (<span id="darkness-slider-label">0%</span>)</div>
+                        <div class="pretty-slider">
+                            <input id="darkness-slider-input" type="range" min="0" max="500"/>
+                            <div id="darkness-slider-fill" class="fill">
+                                <div class="handle"></div>
+                            </div>
+                            <div class="background"></div>
+                        </div>
+                        <div class="text-label"><b>Color Choices</b> (Pick whatever looks best!)</div>
+                        <div id="color-choices">
+                            <div class="add-new" title="Add new color"></div>
+                        </div>
+                        <div id="show-color-hint" class="show-hint">What Color Should I pick?</div>
+                    </div>
+                    <!-- Location page -->
+                    <div class="page" name="location">
+                        <div id="location-search-container">
+                            <div id="location-search">
+                                <input placeholder="Search Location" spellcheck="false"/>
+                                <svg id="location-search-icon" viewBox="0 0 18 18">
+                                    <path d="M4 12C3.1 10.8 2.6 9.2 2.6 7.6C2.6 3.4 6 0 10.2 0C14.4 0 17.8 3.4 17.8 7.6C17.8 11.8 14.4 15.2 10.2 15.2C8.5 15.2 7 14.6 5.8 13.7L2.1 17.4C1.6 17.9 0.8 17.9 0.4 17.4C-0.1 17 -0.1 16.2 0.4 15.7L4 12zM10.2 1.9C13.3 1.9 15.8 4.5 15.8 7.6C15.8 10.7 13.3 13.2 10.2 13.2C7 13.2 4.5 10.7 4.5 7.6C4.5 4.5 7 1.9 10.2 1.9z" style="fill:url(#_Linear1);"/>
+                                    <defs>
+                                        <linearGradient id="_Linear1" x1="0" y1="0" x2="18" y2="18" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0"/>
+                                            <stop offset="1"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                <div class="underliner"></div>
+                                <ul id="location-results"></ul>
+                                <div class="no-locations-found">Type the name of the nearest large city and/or local country</div>
+                            </div>
+                        </div>
+                        <div id="location-row">
+                            <button id="location-autofind" class="pretty-button">
+                                <span>Auto-Find (Can be Inaccurate)</span>
+                                <span>Finding...</span>
+                            </button>
+                            <input id="location-lat" class="pretty-input" maxlength="9"/>
+                            <input id="location-lon" class="pretty-input" maxlength="9"/>
+                        </div>
+                        <div id="location-name">
+                            Custom Coordinates Near New York, United States
+                        </div>
+                        <div id="location-map">
+                            <div class="image"></div>
+                            <svg id="location-map-pointer" class="move-animate" viewBox="0 0 80 80">
+                                <circle cx="40" cy="40" r="20"/>
+                                <circle cx="40" cy="40" r="13"/>
+                                <circle cx="40" cy="40" r="7.5"/>
+                                <circle cx="40" cy="40" r="4"/>
+                                <g class="pointer">
+                                    <path d="M40 40.6C39.6 40.6 39.2 40.4 38.9 39.8C37.1 36.5 33.7 32.6 33.7 29.1C33.7 25.6 36.5 22.8 40 22.8C43.4 22.8 46.2 25.6 46.2 29.1C46.2 32.6 42.9 36.5 41.1 39.8C40.7 40.4 40.4 40.6 40 40.6L40 40.6z"/>
+                                    <circle cx="40" cy="28.6" r="3.6"/>
+                                </g>
+                            </svg>
+                        </div>
+                        <div id="show-location-hint" class="show-hint">Why location?</div>
+                        <!--<a href="http://www.geoplugin.com/geolocation/">IP Geolocation by geoPlugin</a>-->
+                    </div>
+                    <!-- Settings page -->
+                    <div class="page" name="settings">
+                        <div id="settings">
+                            <div class="text-label">Shade Transition Speed</div>
+                            <select id="setting-transition-speed" class="pretty-select">
+                                <option value="4">Very Slow</option>
+                                <option value="3">Slow (Recommended)</option>
+                                <option value="2">Medium</option>
+                                <option value="1">Fast</option>
+                                <option value="0">Instant</option>
+                            </select>
+
+                            <div class="text-label">Color Blending Algorithm</div>
+                            <select id="setting-color-blending" class="pretty-select">
+                                <option value="multiply">Multiply (Recommended)</option>
+                                <option value="normal">Opacity (Fastest)</option>
+                                <option value="darken">Darken</option>
+                                <option value="difference">Invert</option>
+                            </select>
+
+                            <div class="pretty-checkbox">
+                                <input id="setting-shaded-scrollbar" type="checkbox">
+                                <label for="setting-shaded-scrollbar">
+                                    <span></span>Shaded Browser Scrollbar
+                                </label>
+                            </div>
+
+                            <div class="pretty-checkbox">
+                                <input id="setting-wider-blending-range" type="checkbox">
+                                <label for="setting-wider-blending-range">
+                                    <span></span>Max Shade Slider Range
+                                </label>
+                            </div>
+
+                            <div class="pretty-checkbox">
+                                <input id="setting-disable-developer-warning" type="checkbox">
+                                <label for="setting-disable-developer-warning">
+                                    <span></span>Disable Developer Warning
+                                </label>
+                            </div>
+
+                            <button id="settings-edit-keyboard-shortcut" class="pretty-button">Edit Keyboard Shortcuts</button>
+                            <button id="settings-reset-settings" class="pretty-button"><span>Reset Settings to Defaults</span><span><b>Click Again to Reset Settings</b></span></button>
+                        </div>
+                        <div id="settings-issue-resolution-page" class="show-hint">Common Issues Page</div>
+                        <!--<ul>
+                            <li>Performance Test</li>
+                            <li>Philips Hue</li>
+                            <li>Save Settings</li>
+                            <li>Load Settings</li>
+                        </ul>-->
+                    </div>
+                    <a id="copyright" href="https://bit.ly/screen-shader-donate" target="_blank">
+                        Made with hard work by Marc Guiselin and a crew of unicorns <span>&#x1F984;</span>
+                    </a>
+                </div>
+                <div id="hints">
+                    <div id="temperature-hint" class="hint">
+                        <h1>Screen Shader helps you control your circadian rythm! &#x1F60E;</h1>
+                        <p>
+                            Feeling tired? Screen Shader will ease you into sleep automatically.
+                            The increased shade will increase melatonin hormone production right before sleep.
+                            So be sure to set what time you wake up!
+                        </p>
+                        <p>
+                            Ready to work? Screen Shader keeps you awake during the daytime.
+                            As long as the sun is up where you live your screen stays bright!
+                            During the night it will turn down the brightness since the sun isn't up anymore.
+                        </p>
+                        <!-- <p>
+                            Click on the dropdown to pick custome shade presets, or make your own custom settings by dragging the sliders!
+                            The graph will show you how the shade will change through the day.
+                        </p> -->
+                    </div>
+                    <div id="color-hint" class="hint">
+                        <p>
+                            Pick a color that lowers your exposure to blue light and is comfortable on your eyes. These colors are warm, redish, or orangish colors.
+                            The first 6 color choices are great for most users!
+                        </p>
+                        <p>
+                            However you may want to choose another color.
+                            Sufferers of macular edema might benefit from using a blue shade color to increase contrast between colors.
+                            So the choice totally depends on you!
+                        </p>
+                    </div>
+                    <div id="location-hint" class="hint">
+                        <h1>Give Screen Shader a location and it will do the rest! &#x1F600;</h1>
+                        <p>
+                            Screen Shader's algorithm changes the shade according to local sunset and sunrise times to best match up with your
+                            <a href="https://www.nigms.nih.gov/Education/Pages/Factsheet_CircadianRhythms.aspx" target="_blank">biological clock</a>. &#x1F31E;
+                        </p>
+                    </div>
+                    <div id="new-tab-hint" class="hint">
+                        <h1>Screen Shader can't work on the new tab page! 😢</h1>
+                        <p>
+                            So be sure to install a chrome theme that will darken the new tab page so it isn't a glaring white!
+                        </p>
+                        <p>
+                            Try the <a href="https://chrome.google.com/webstore/detail/ogggehcanmknkicaiilbajdafalhlejm" target="blank_" id="screen-shader-theme-hint-link">Screen Shader Dark Theme</a>
+                        </p>
+                    </div>
+                    <button id="close-hints" class="pretty-button">Got it!</button>
+                </div>
+                <div id="color-picker-container">
+                    <div id="color-picker">
+                        <canvas id="color-picker-canvas-hue" width="240" height="240"></canvas>
+                        <canvas id="color-picker-canvas-triangle" width="190" height="190"></canvas>
+                        <div id="color-picker-hue-pointer"></div>
+                        <div id="color-picker-triangle-pointer"></div>
+                        <div class="buttons">
+                            <button id="color-picker-set" class="pretty-button">Update Color</button>
+                            <button id="color-picker-add" class="pretty-button">Add New Color</button>
+                            <input id="color-picker-hex" class="pretty-input"/>
+                            <input id="color-picker-red" class="pretty-input"/>
+                            <input id="color-picker-green" class="pretty-input"/>
+                            <input id="color-picker-blue" class="pretty-input"/>
+                            <button id="color-picker-cancel" class="pretty-button">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="disable-picker">
+            <div id="disable-picker-inner">
+                <h1>Disable for how long?</h1>
+                <button id="disable-forever-button" class="pretty-button">Disable Forever</button>
+                <button id="disable-until-sunrise-button" class="pretty-button">Disable Until Sunrise</button>
+                <button id="disable-for-time-button" class="pretty-button">Disable For</button>
+                <input id="disable-for-time-input" class="pretty-input"/>
+                <button id="disable-on-website-button" class="pretty-button">Disable On</button>
+                <input id="disable-on-website-input" class="pretty-input" spellcheck="false"/>
+                <button id="disable-cancel-button" class="pretty-button">Cancel</button>
+            </div>
+        </div>
+        <script src="scripts/cities.js" async></script>
+        <script src="scripts/popup.js" async></script>
+    </body>
+</html>
