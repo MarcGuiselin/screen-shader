@@ -88,7 +88,7 @@ chrome.storage.local.get(null, res => {
             settings.darkness = Math.min(MAXDARKNESS, Math.max(0, darkness));
 
         if(colorBlending == 'multiply' || colorBlending == 'darken' || colorBlending == 'normal')
-            settings.enabled = colorBlending;
+            settings.colorBlending = colorBlending;
         
         localStorage.clear();
     }
