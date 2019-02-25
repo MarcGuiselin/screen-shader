@@ -142,13 +142,24 @@ if(
 
                 // Creates a fake html and body element placed in screen shader
                 let $htmlbackground = document.createElement('html'),
-                    $bodybackground = document.createElement('body');
+                    $bodybackground = document.createElement('div');
                 StyleSet($htmlbackground, NEUTRALSTYLES, FILLSCREENSTYLES, {zIndex: -2147483647});
-                StyleSet($bodybackground, NEUTRALSTYLES, FILLSCREENSTYLES, {zIndex: -2147483646});
+                StyleSet($bodybackground, NEUTRALSTYLES, FILLSCREENSTYLES, {zIndex: -2147483646}, {background: GetStyle(document.body, 'background')});
                 $screenshader.appendChild($htmlbackground);
                 $screenshader.appendChild($bodybackground);
 
-                // Set screen shader as last element in html immediately. Otherwise some sites like bit.ly will get the fake body element and add stuff to it
+                // Observe for potential change in style of body background and apply to fake
+                let recentlyUpdatedBodyBackground = false;
+                new MutationObserver(() => {
+                    if(!recentlyUpdatedBodyBackground){
+                        recentlyUpdatedBodyBackground = true;
+                        StyleSet($bodybackground, {background: GetStyle(document.body, 'background')});
+                        setTimeout(() => recentlyUpdatedBodyBackground = false, 200);
+                    }
+                })
+                .observe(document.body, {attributes: true});
+
+                // Set screen shader as last element in html immediately
                 if(!GetFullscreenElement())
                     $html.appendChild($screenshader);
             }else{
