@@ -1,7 +1,7 @@
 {
     "name": "Screen Shader | F.lux for Chrome",
     "short_name": "Screen Shader",
-    "version": "2.0.10",
+    "version": "2.0.20",
     "manifest_version": 2,
     "offline_enabled": true,
     "description": "Shades Chrome to a soothing orange color to decrease eye-strain, eye fatigue and to appease your brain's day/night cycle.",
