@@ -154,7 +154,10 @@ if(
                     if(!recentlyUpdatedBodyBackground){
                         recentlyUpdatedBodyBackground = true;
                         StyleSet($bodybackground, {background: GetStyle(document.body, 'background')});
-                        setTimeout(() => recentlyUpdatedBodyBackground = false, 200);
+                        setTimeout(() => {
+                            StyleSet($bodybackground, {background: GetStyle(document.body, 'background')});
+                            recentlyUpdatedBodyBackground = false;
+                        }, 400);
                     }
                 })
                 .observe(document.body, {attributes: true});
@@ -182,6 +185,7 @@ if(
         // #endregion
 
         // #region Bug #4 - Fix high z-index elements showing over Screen Shader. Since applying position relative to the body breaks a couple websites, Screen Shader only applies this fix when its needed
+        
         let appliedfix = false,
             observer;
         function CheckElementZIndex($el){
@@ -230,6 +234,11 @@ if(
                 if(observer)
                     observer.disconnect();
                 $style.innerHTML += 'html > body{z-index: 0 !important;position: relative !important;}';
+                
+                // Fix mightytext.net/web8/ and w3schools.com/html/tryit.asp?filename=tryhtml_default and potentially other fullpage applications
+                if(document.body.offsetHeight < 200)
+                    $style.innerHTML += 'html, body{height: 100%;}';
+
                 appliedfix = true;
             }
         }

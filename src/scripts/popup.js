@@ -1789,9 +1789,9 @@ $settingEditKeyboardShortcut.addEventListener('click', () => {
     let chromeVersion = /(Chrome|Chromium)\/([0-9]+)/.exec(navigator.userAgent);
     // Open old or new extension shortcuts page
     if(chromeVersion && parseInt(chromeVersion[2]) < 65)
-        chrome.tabs.create({url: 'chrome://extensions/configureCommands/#ScreenShader'});
+        chrome.tabs.create({url: 'chrome://extensions/configureCommands/#ScreenShader', active: true});
     else
-        chrome.tabs.create({url: 'chrome://extensions/shortcuts'});
+        chrome.tabs.create({url: 'chrome://extensions/shortcuts', active: true});
 });
 
 $settingResetSettings.addEventListener('click', () => {
@@ -1827,7 +1827,7 @@ $settingResetSettings.addEventListener('click', () => {
 });
 
 $settingIssueResolutionPage.addEventListener('click', () => {
-    chrome.tabs.create({url: chrome.extension.getURL('common-issues.html')});
+    chrome.tabs.create({url: chrome.extension.getURL('common-issues.html'), active: true});
 });
 
 // #endregion

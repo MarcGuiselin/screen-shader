@@ -59,6 +59,52 @@ var settings = {
     };
 
 
+if(chrome.contextMenus && chrome.contextMenus.removeAll && chrome.contextMenus.onClicked){
+    chrome.contextMenus.removeAll(() => {
+        chrome.contextMenus.create({
+            title: 'Common Issues Page',
+            type: 'normal',
+            id: 'common-issues',
+            contexts: ['browser_action']
+        });
+        chrome.contextMenus.create({
+            title: 'Configure Keyboard Shortcuts',
+            type: 'normal',
+            id: 'configure-commands',
+            contexts: ['browser_action']
+        });
+        chrome.contextMenus.create({
+            title: '',
+            type: 'separator',
+            id: 'separator-1',
+            contexts: ['browser_action']
+        });
+        chrome.contextMenus.create({
+            title: 'Support Development',
+            type: 'normal',
+            id: 'support-development',
+            contexts: ['browser_action']
+        });
+    });
+
+    chrome.contextMenus.onClicked.addListener(({menuItemId}) => {
+        if(menuItemId == 'support-development')
+            chrome.tabs.create({url: 'https://bit.ly/screen-shader-donate', active: true});
+
+        else if (menuItemId == 'common-issues')
+            chrome.tabs.create({url: chrome.extension.getURL('common-issues.html'), active: true});
+
+        else if (menuItemId == 'configure-commands') {
+            let chromeVersion = /(Chrome|Chromium)\/([0-9]+)/.exec(navigator.userAgent);
+            // Open old or new extension shortcuts page
+            if(chromeVersion && parseInt(chromeVersion[2]) < 65)
+                chrome.tabs.create({url: 'chrome://extensions/configureCommands/#ScreenShader', active: true});
+            else
+                chrome.tabs.create({url: 'chrome://extensions/shortcuts', active: true});
+        }
+    });
+}
+
 // Grab options and stats, merge with default settings, and save
 chrome.storage.local.get(null, res => {
     settings = Object.assign(settings, res.settings);
@@ -280,7 +326,7 @@ chrome.runtime.onInstalled.addListener(({reason}) => {
         // Wait for background page to set settings 
         setTimeout(() => {
             // Show install Page and maximize window
-            chrome.tabs.create({url: chrome.extension.getURL('welcome.html')});
+            chrome.tabs.create({url: chrome.extension.getURL('welcome.html'), active: true});
             chrome.windows.getCurrent(null, window => chrome.windows.update(window.id, {state: 'maximized'}));
 
             // Inject script into every page
