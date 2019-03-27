@@ -332,14 +332,14 @@ chrome.runtime.onInstalled.addListener(({reason}) => {
             // Inject script into every page
             chrome.tabs.query({}, tabs => {
                 for (let {id, url} of tabs) {
-                    if(isValidUrl(url) && !url.startsWith(SELFURL)){
+                    if(IsValidUrl(url) && !url.startsWith(SELFURL)){
                         try{
                             chrome.tabs.executeScript(id, { file: 'scripts/content.js' });
                         }catch(e){ }
                     }
                 }
             });
-        }, 1000);
+        }, 1500);
     }
 });
 
@@ -418,7 +418,7 @@ function UpdateAllTabIcons(clearBadgeText){
     });
 }
 
-function isValidUrl(url){
+function IsValidUrl(url){
     return !url.includes('://chrome.google.com/webstore') && !url.startsWith('chrome://') && !(url.startsWith('chrome-extension://') && !url.startsWith(SELFURL));
 }
 
@@ -448,7 +448,7 @@ function CheckUrlMatchDisabled(url){
 function UpdateTabIcon(tabId, url){
     if(ScreenShaderEnabled()){
         let lurl = url.toLowerCase(),
-            valid = isValidUrl(lurl);
+            valid = IsValidUrl(lurl);
         
         if(!saved.warnedUserAboutNewTab && lurl.startsWith('chrome://newtab')){
             chrome.browserAction.setBadgeText({text: '!!', tabId});

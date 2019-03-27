@@ -1,5 +1,5 @@
 {
-    "name": "Screen Shader | F.lux for Chrome",
+    "name": "Screen Shader | Smart Screen Tinting",
     "short_name": "Screen Shader",
     "version": "2.0.30",
     "manifest_version": 2,
@@ -40,8 +40,7 @@
         ],
         "js": ["scripts/content.js"],
         "run_at": "document_start",
-        "all_frames": true,
-        "match_about_blank": true
+        "all_frames": true
     }],
     "permissions": [
         "tabs",
