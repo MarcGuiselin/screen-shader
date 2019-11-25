@@ -83,11 +83,6 @@ if(
     $screenshader.appendChild($mainshader);
     $screenshader.appendChild($style);
     $screenshader.appendChild($scrollbarstyle);
-
-    if(!INIFRAME){ // Don't actually place element anywhere cause we are in an inframe
-        shadeElementInDom = true;
-        $html.appendChild($screenshader);
-    }
     // #endregion
 
     // #region Event listeneners
@@ -120,8 +115,31 @@ if(
 
     // #region Bug fixers
     if(!INIFRAME){
-        // #region Bug #1 and 2 - Page flashes white before it loads - Background issues on a multitude of websites
+        // #region Custom website exceptions
+
+        // Vanguard freaks out if the screen shader element is added to the dom before inline scripts run
+        const noInstantShade = location.hostname == 'personal.vanguard.com';
+
+        // Old reddit styles can be broken by fake body element (such as https://old.reddit.com/r/nfl/)
+        const noFakeBody = location.hostname == 'old.reddit.com';
+
+        // Prevent background not correctly being blended on sites like https://www.nexusmods.com/
+        // Fixes issue when navigating from https://play.google.com/store to https://play.google.com/settings (by clicking setting button)
+        const renderBugFix = location.hostname == 'www.nexusmods.com' || location.hostname == 'play.google.com';
+
+        // #endregion
+
+        // #region Bug #1 - Add shade element as soon as possible to avoid white flash
         
+        if(!noInstantShade){
+            shadeElementInDom = true;
+            $html.appendChild($screenshader);
+        }
+
+        // #endregion
+
+        // #region Bug #2 and 3 - Page flashes white before it loads - Background issues on a multitude of websites
+
         // Get original html background. Most sites don't have one, so set it to white in that case
         let htmlBackgroundColor = GetStyle($html, 'background-color').replace(/\s/g, '');
         if(['', 'transparent', 'rgba(0,0,0,0)', '#00000000', 'hsla(0,0%,0%,0)', 'inherit', 'initial', 'unset', 'none'].includes(htmlBackgroundColor))
@@ -146,21 +164,24 @@ if(
                 StyleSet($htmlbackground, NEUTRALSTYLES, FILLSCREENSTYLES, {zIndex: -2147483647});
                 StyleSet($bodybackground, NEUTRALSTYLES, FILLSCREENSTYLES, {zIndex: -2147483646}, {background: GetStyle(document.body, 'background')});
                 $screenshader.appendChild($htmlbackground);
-                $screenshader.appendChild($bodybackground);
+                if(!noFakeBody)
+                    $screenshader.appendChild($bodybackground);
 
                 // Observe for potential change in style of body background and apply to fake
-                let recentlyUpdatedBodyBackground = false;
-                new MutationObserver(() => {
-                    if(!recentlyUpdatedBodyBackground){
-                        recentlyUpdatedBodyBackground = true;
-                        StyleSet($bodybackground, {background: GetStyle(document.body, 'background')});
-                        setTimeout(() => {
+                if(!noFakeBody){
+                    let recentlyUpdatedBodyBackground = false;
+                    new MutationObserver(() => {
+                        if(!recentlyUpdatedBodyBackground){
+                            recentlyUpdatedBodyBackground = true;
                             StyleSet($bodybackground, {background: GetStyle(document.body, 'background')});
-                            recentlyUpdatedBodyBackground = false;
-                        }, 400);
-                    }
-                })
-                .observe(document.body, {attributes: true});
+                            setTimeout(() => {
+                                StyleSet($bodybackground, {background: GetStyle(document.body, 'background')});
+                                recentlyUpdatedBodyBackground = false;
+                            }, 400);
+                        }
+                    })
+                    .observe(document.body, {attributes: true});
+                }
 
                 // Set screen shader as last element in html immediately
                 if(!GetFullscreenElement())
@@ -172,10 +193,13 @@ if(
         BodyExistsChecker();
         // #endregion
 
-        // #region Bug #3 - Add video element to page to fix flashing background problem on https://www.nexusmods.com/  Not sure why but it works
+        // #region Bug #4 - Fix miscellaneous rendering issues on websites involving mix blend mode being ignored. I love chrome's rendering engine.
 
-        // Keeping a video element in the page seems to prevent background not correctly being blended on sites like https://www.nexusmods.com/
-        if(location.hostname == 'www.nexusmods.com'){// TODO: test if nexusmods really is the only website with this problem
+        if(renderBugFix){
+            // Forces proper rendering for some reason.
+            // $style.innerHTML += "html > body { opacity: .99999; }";
+
+            // Found that adding a video element to the page forces proper rendering. Less impact on performance than altering opacity of whole page.
             let $vid = document.createElement('video');
             StyleSet($vid, {position: 'fixed', background: 'red', top: 0, left: 0, opacity: 0, zIndex: 1000000});
             $screenshader.appendChild(document.createComment('The video element forces chrome to render the body color correctly'));
@@ -184,7 +208,7 @@ if(
 
         // #endregion
 
-        // #region Bug #4 - Fix high z-index elements showing over Screen Shader. Since applying position relative to the body breaks a couple websites, Screen Shader only applies this fix when its needed
+        // #region Bug #5 - Fix high z-index elements showing over Screen Shader. Since applying position relative to the body breaks a couple websites, Screen Shader only applies this fix when it's needed
         
         let appliedfix = false,
             observer;
@@ -234,7 +258,7 @@ if(
                 if(observer)
                     observer.disconnect();
                 $style.innerHTML += 'html > body{z-index: 0 !important;position: relative !important;}';
-                
+
                 // Fix mightytext.net/web8/ and w3schools.com/html/tryit.asp?filename=tryhtml_default and potentially other fullpage applications
                 if(document.body.offsetHeight < 200)
                     $style.innerHTML += 'html, body{height: 100%;}';
