@@ -123,14 +123,6 @@ if(
         // Old reddit styles can be broken by fake body element (such as https://old.reddit.com/r/nfl/)
         const noFakeBody = location.hostname == 'old.reddit.com';
 
-        // Prevent background not correctly being blended on sites like https://www.nexusmods.com/
-        // Fixes issue when navigating from https://play.google.com/store to https://play.google.com/settings (by clicking setting button)
-        const renderBugFix = location.hostname == 'www.nexusmods.com' || location.hostname == 'play.google.com';
-
-        // Custom fix for housemarque.com
-        if (location.hostname == 'housemarque.com')
-            $style.innerHTML += 'html > body { position: relative; z-index: 0; }';
-
         // #endregion
 
         // #region Bug #1 - Add shade element as soon as possible to avoid white flash
@@ -144,10 +136,10 @@ if(
 
         // #region Bug #2 and 3 - Page flashes white before it loads - Background issues on a multitude of websites
 
-        // Get original html background. Most sites don't have one, so set it to white in that case
+        // Get original html background. Most sites don't have one, so don't set it in that case
         let htmlBackgroundColor = GetStyle($html, 'background-color').replace(/\s/g, '');
         if(['', 'transparent', 'rgba(0,0,0,0)', '#00000000', 'hsla(0,0%,0%,0)', 'inherit', 'initial', 'unset', 'none'].includes(htmlBackgroundColor))
-            htmlBackgroundColor = 'white';
+            htmlBackgroundColor = '';
 
         // Set html background to a dark color to avoid white flash
         StyleSet($html, {backgroundColor: '#111', transition: '.15s background-color'}); // #D3D3D3
@@ -197,22 +189,7 @@ if(
         BodyExistsChecker();
         // #endregion
 
-        // #region Bug #4 - Fix miscellaneous rendering issues on websites involving mix blend mode being ignored. I love chrome's rendering engine.
-
-        if(renderBugFix){
-            // Forces proper rendering for some reason.
-            // $style.innerHTML += "html > body { opacity: .99999; }";
-
-            // Found that adding a video element to the page forces proper rendering. Less impact on performance than altering opacity of whole page.
-            let $vid = document.createElement('video');
-            StyleSet($vid, {position: 'fixed', background: 'red', top: 0, left: 0, opacity: 0, zIndex: 1000000});
-            $screenshader.appendChild(document.createComment('The video element forces chrome to render the body color correctly'));
-            $screenshader.appendChild($vid);
-        }
-
-        // #endregion
-
-        // #region Bug #5 - Fix high z-index elements showing over Screen Shader. Since applying position relative to the body breaks a couple websites, Screen Shader only applies this fix when it's needed
+        // #region Bug #4 - Fix high z-index elements showing over Screen Shader. Since applying position relative to the body breaks a couple websites, Screen Shader only applies this fix when it's needed
         
         let appliedfix = false,
             observer;
