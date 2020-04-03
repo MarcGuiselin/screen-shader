@@ -291,7 +291,7 @@ if(
 
         OnVisibilityChange();
 
-        if(!settings.disableDeveloperWarning)
+        if(!settings.disableDeveloperWarning && !INIFRAME)
             console.log('%c' +
                 '  Developers, remember to disable the Screen Shader chrome extension and reload the page when developing.  \n' +
                 '  Screen Shader updates the dom often and might cause lag in the devtools!                                 \n' +
