@@ -325,11 +325,10 @@ chrome.runtime.onInstalled.addListener(({reason}) => {
     if(reason == 'install'){
         // Wait for background page to set settings 
         setTimeout(() => {
-            // Show install Page and maximize window
+            // Show install page
             chrome.tabs.create({url: chrome.extension.getURL('welcome.html'), active: true});
-            chrome.windows.getCurrent(null, window => chrome.windows.update(window.id, {state: 'maximized'}));
 
-            // Inject script into every page
+            // Inject content script into every page
             chrome.tabs.query({}, tabs => {
                 for (let {id, url} of tabs) {
                     if(IsValidUrl(url) && !url.startsWith(SELFURL)){
