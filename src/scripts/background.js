@@ -331,10 +331,8 @@ chrome.runtime.onInstalled.addListener(({reason}) => {
             // Inject content script into every page
             chrome.tabs.query({}, tabs => {
                 for (let {id, url} of tabs) {
-                    if(IsValidUrl(url) && !url.startsWith(SELFURL)){
-                        try{
-                            chrome.tabs.executeScript(id, { file: 'scripts/content.js' });
-                        }catch(e){ }
+                    if(IsValidUrl(url)){
+                        chrome.tabs.executeScript(id, { file: 'scripts/content.js' });
                     }
                 }
             });
@@ -418,7 +416,7 @@ function UpdateAllTabIcons(clearBadgeText){
 }
 
 function IsValidUrl(url){
-    return !url.includes('://chrome.google.com/webstore') && !url.startsWith('chrome://') && !(url.startsWith('chrome-extension://') && !url.startsWith(SELFURL));
+    return url.trim() && !url.includes('://chrome.google.com/webstore') && !url.startsWith('chrome://') && !(url.startsWith('chrome-extension://') && !url.startsWith(SELFURL));
 }
 
 function ScreenShaderEnabled(){
