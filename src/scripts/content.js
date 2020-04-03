@@ -76,7 +76,7 @@ if(
     StyleSet($darkdim,      NEUTRALSTYLES, FILLSCREENSTYLES, {zIndex: 2147483646, background: 'black', opacity: 0}); // Removed: transition: 'opacity 0.05s',
     StyleSet($mainshader,   NEUTRALSTYLES, FILLSCREENSTYLES, {zIndex: 2147483645, background: '#111'}); // Removed: transition: 'background 0.05s',
 
-    $style.innerHTML = 'screen-shader{pointer-events: none !important;}'; // html>body{z-index: 0 !important;position: relative !important;}html,body{height: 100%}
+    $style.innerHTML = 'screen-shader{pointer-events: none !important;z-index: auto !important;}';
 
     $screenshader.appendChild(document.createComment('This is an element that contains all the html for the screen shader extension to work'));
     $screenshader.appendChild($darkdim);
