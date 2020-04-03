@@ -1473,8 +1473,8 @@ function ColorsEqual(color1, color2){
 $locationAutofindButton.addEventListener('click', LocationAutoFind);
 
 // Clicking outside the location search will close it
-$locationSearch.addEventListener('click', evt => evt.stopPropagation());
-$body.addEventListener('click', () => $locationSearch.classList.remove('focused'));
+$locationSearch.addEventListener('mousedown', evt => evt.stopPropagation());
+$body.addEventListener('mousedown', () => $locationSearch.classList.remove('focused'));
 
 // Clicking the location search opens the results menu and loads queries (query may have changed because user used arrow keys and enter to select a result)
 $locationSearchInput.addEventListener('focus', () => {
@@ -1492,8 +1492,12 @@ $locationSearchInput.addEventListener('keyup', LocationQueryResultsLoad);
 
 // Process some keyboard shortcuts used to select location results
 $locationSearchInput.addEventListener('keydown', evt => {
+    // Bluring the input using tab should unfocus the location search
+    if(evt.key == 'Tab'){
+        $locationSearch.classList.remove('focused')
+    }
     // Arrow up moves the selection up one result
-    if(evt.key == 'ArrowUp'){
+    else if(evt.key == 'ArrowUp'){
         if($locationResults.firstChild){
             let $selectedResult = $locationResults.querySelector('.select') || $locationResults.firstChild,
                 $newSelected = $selectedResult !== $locationResults.firstChild ? $selectedResult.previousSibling : $locationResults.lastChild;
@@ -1599,9 +1603,9 @@ function LocationInputChange(isInputEvent, isLatitude){
         valid = (isLatitude ? /^-?\d*\.?\d*(N|S)?$/ : /^-?\d*\.?\d*(E|W)?$/).test(value) && !isNaN(parsed) && parsed <= 90 && parsed >= -90;
 
     if(isInputEvent){
-        $locationLatInput.classList.toggle('incorrect', !valid);
+        $input.classList.toggle('incorrect', !valid);
     }else{
-        $locationLatInput.classList.remove('incorrect');
+        $input.classList.remove('incorrect');
 
         if(valid){
             if(isLatitude)
@@ -1615,8 +1619,7 @@ function LocationInputChange(isInputEvent, isLatitude){
             UpdateUI();
         }
 
-        $locationLatInput.blur();
-        $locationLonInput.blur();
+        $input.blur();
     }
 }
 
