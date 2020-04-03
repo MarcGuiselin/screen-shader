@@ -127,6 +127,10 @@ if(
         // Fixes issue when navigating from https://play.google.com/store to https://play.google.com/settings (by clicking setting button)
         const renderBugFix = location.hostname == 'www.nexusmods.com' || location.hostname == 'play.google.com';
 
+        // Custom fix for housemarque.com
+        if (location.hostname == 'housemarque.com')
+            $style.innerHTML += 'html > body { position: relative; z-index: 0; }';
+
         // #endregion
 
         // #region Bug #1 - Add shade element as soon as possible to avoid white flash
