@@ -28,10 +28,10 @@ if(
           NEUTRALSTYLES = {display: 'block', transition: 'none', margin: '0px', padding: '0px', borderRadius: '0px', border: 'none', outline: 'none', visibility: 'visible', maxHeight: 'none', maxWidth: 'none', minHeight: 'none', minWidth: 'none', clip: 'unset', overflowX: 'visible', overflowY: 'visible', opacity: 1},
           FILLSCREENSTYLES = {position: 'fixed', top: '-10%', right: '-10%', bottom: '-10%',left: '-10%', width: 'auto', height: 'auto'},
           COLORALGORITHMS = {
-            normal: (a, b, o) => Math.round((a * (1 - o) + b * o) * (1 - settings.darkness)),
-            multiply: (a, b, o) => Math.round((a * (1 - o) + (a * b / 255) * o) * (1 - settings.darkness)),
-            darken: (a, b, o) => Math.round((b >= a ? a : a * (1 - o) + b * o) * (1 - settings.darkness)),
-            difference: (a, b, o) => Math.round(Math.abs(a - b * o) * (1 - settings.darkness))
+            normal: (a, b, o) => a * (1 - o) + b * o,
+            multiply: (a, b, o) => a * (1 - o) + (a * b / 255) * o,
+            darken: (a, b, o) => b >= a ? a : a * (1 - o) + b * o,
+            difference: (a, b, o) => Math.abs(a - b * o)
           },
           LENGTHSLEEP = 9.18/24,
           TRANSITIONSPEEDS = [0, .04/24, .3/24, 1/24, 1.6/24];
@@ -422,7 +422,10 @@ if(
                                     scrollArrowDrawCanvas = document.createElement('canvas');
 
                                 let algorithm = COLORALGORITHMS[settings.colorBlending] || COLORALGORITHMS.normal,
-                                    solveColor = (r, g, b) => 'rgb(' + [algorithm(r, settings.color[0], opacity), algorithm(g, settings.color[1], opacity), algorithm(b, settings.color[2], opacity)].join(', ') + ')',
+                                    solveColor = (r, g, b) => 'rgb(' +
+                                        Math.round(algorithm(r, settings.color[0], opacity) * (1 - settings.darkness)) + ', ' +
+                                        Math.round(algorithm(g, settings.color[1], opacity) * (1 - settings.darkness)) + ', ' +
+                                        Math.round(algorithm(b, settings.color[2], opacity) * (1 - settings.darkness)) + ')',
                                     color1 = solveColor(241, 241, 241),
                                     color2 = solveColor(210, 210, 210),
                                     color3 = solveColor(193, 193, 193),
