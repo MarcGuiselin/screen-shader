@@ -2,9 +2,9 @@
 
 > The most popular screen tinting software for all devices that run chrome!
 
-![Chrome Web Store](https://img.shields.io/chrome-web-store/d/fmlboobidmkelggdainpknloccojpppi.svg)
+![Chrome Web Store](https://img.shields.io/chrome-web-store/d/fmlboobidmkelggdainpknloccojpppi?style=flat-square)
 ![Chrome Web Store](https://img.shields.io/chrome-web-store/rating/fmlboobidmkelggdainpknloccojpppi?color=orange&style=flat-square)
-![Chrome Web Store](https://img.shields.io/chrome-web-store/v/fmlboobidmkelggdainpknloccojpppi.svg)
+![Chrome Web Store](https://img.shields.io/chrome-web-store/v/fmlboobidmkelggdainpknloccojpppi?style=flat-square)
 
 ## Install
 
