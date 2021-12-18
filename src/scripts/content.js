@@ -48,7 +48,6 @@ if(
         lastScrollbarSettings = '',
         mouseOverScrollbar = false,
         shadeElementInDom = false,
-        justUpdatedSettings = false,
         scrollbarsVisible = false,
 
         oldPageUrl = '',
@@ -283,28 +282,24 @@ if(
 
     chrome.storage.onChanged.addListener(changes => { 
         if(changes.settings){
-            if(justUpdatedSettings){
-                justUpdatedSettings = false;
-            }else{
-                let newSettings = changes.settings.newValue;
+            let newSettings = changes.settings.newValue;
 
-                // If location changed get the sunset and sunrise times again
-                if(whenJulian && (settings.latitude != newSettings.latitude || settings.longitude != newSettings.longitude || settings.hasLocation != newSettings.hasLocation))
-                    whenJulian = 0;
+            // If location changed get the sunset and sunrise times again
+            if(whenJulian && (settings.latitude != newSettings.latitude || settings.longitude != newSettings.longitude || settings.hasLocation != newSettings.hasLocation))
+                whenJulian = 0;
 
-                settings = newSettings;
+            settings = newSettings;
 
-                // Check if url is disabled
-                CheckUrlMatchDisabled();
+            // Check if url is disabled
+            CheckUrlMatchDisabled();
 
-                // If screen shader or shaded scrollbar was disabled 
-                if(!settings.shadedScrollbar || !(typeof settings.enabled == 'boolean' ? settings.enabled : settings.enabled < now))
-                    $html.classList.remove('ss-shaded-scrollbars');
+            // If screen shader or shaded scrollbar was disabled 
+            if(!settings.shadedScrollbar || !(typeof settings.enabled == 'boolean' ? settings.enabled : settings.enabled < now))
+                $html.classList.remove('ss-shaded-scrollbars');
 
-                // Update shade as soon as possible
-                if(!document.hidden)
-                    window.requestAnimationFrame(UpdateShade);
-            }
+            // Update shade as soon as possible
+            if(!document.hidden)
+                window.requestAnimationFrame(UpdateShade);
         }
     });
 
