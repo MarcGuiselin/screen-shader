@@ -122,6 +122,9 @@ if(
         // Old reddit styles can be broken by fake body element (such as https://old.reddit.com/r/nfl/)
         const noFakeBody = location.hostname == 'old.reddit.com';
 
+        // Some addons for youtube might trigger the z-index fix unintentionally, breaking the site
+        const noZindexFix = location.hostname == 'www.youtube.com';
+
         // #endregion
 
         // #region Bug #1 - Add shade element as soon as possible to avoid white flash
@@ -189,70 +192,70 @@ if(
         // #endregion
 
         // #region Bug #4 - Fix high z-index elements showing over Screen Shader. Since applying position relative to the body breaks a couple websites, Screen Shader only applies this fix when it's needed
-        
-        let appliedfix = false,
-            observer;
-        function CheckElementZIndex($el){
-            // Element is visible
-            if($el.offsetWidth || $el.offsetHeight || $el.getClientRects().length)
-                if(parseInt(GetStyle($el, 'z-index')) >= 2147483646)
-                    ApplyZIndexFix();
-        }
-        function StartObservingZIndex(){
-            // Check every element in page
-            for(let $el of document.body.querySelectorAll('DIV, IFRAME'))
-                CheckElementZIndex($el);
+        if(!noZindexFix){
+            let appliedfix = false,
+                observer;
+            function CheckElementZIndex($el){
+                // Element is visible
+                if($el.offsetWidth || $el.offsetHeight || $el.getClientRects().length)
+                    if(parseInt(GetStyle($el, 'z-index')) >= 2147483646)
+                        ApplyZIndexFix();
+            }
+            function StartObservingZIndex(){
+                // Check every element in page
+                for(let $el of document.body.querySelectorAll('DIV, IFRAME'))
+                    CheckElementZIndex($el);
 
-            if(!appliedfix){
-                // Whenever new elements are added to the dom, make sure they all have a z-index below Screen Shader
-                observer = new MutationObserver(mutations => {
-                    for(let mutation of mutations){
-                        // Node added
-                        if(mutation.type == 'childList'){
-                            for(let $el of mutation.addedNodes){
-                                if($el.nodeName == 'DIV'){
-                                    CheckElementZIndex($el);
+                if(!appliedfix){
+                    // Whenever new elements are added to the dom, make sure they all have a z-index below Screen Shader
+                    observer = new MutationObserver(mutations => {
+                        for(let mutation of mutations){
+                            // Node added
+                            if(mutation.type == 'childList'){
+                                for(let $el of mutation.addedNodes){
+                                    if($el.nodeName == 'DIV'){
+                                        CheckElementZIndex($el);
 
-                                    // Children of added nodes must also be checked
-                                    let children = $el.querySelectorAll('DIV, IFRAME');
-                                    if(children.length < 100)
-                                        for(let $child of children)
-                                            CheckElementZIndex($child);
-                                }else if($el.nodeName == 'IFRAME'){
-                                    CheckElementZIndex($el);
+                                        // Children of added nodes must also be checked
+                                        let children = $el.querySelectorAll('DIV, IFRAME');
+                                        if(children.length < 100)
+                                            for(let $child of children)
+                                                CheckElementZIndex($child);
+                                    }else if($el.nodeName == 'IFRAME'){
+                                        CheckElementZIndex($el);
+                                    }
                                 }
                             }
+                            // Attribute changed
+                            else if(mutation.type == 'attributes' && mutation.target !== $screenshader ){
+                                if(mutation.target.nodeType == 1 && (mutation.target.nodeName == 'DIV' || mutation.target.nodeName == 'IFRAME'))
+                                    CheckElementZIndex(mutation.target);
+                            }
                         }
-                        // Attribute changed
-                        else if(mutation.type == 'attributes' && mutation.target !== $screenshader ){
-                            if(mutation.target.nodeType == 1 && (mutation.target.nodeName == 'DIV' || mutation.target.nodeName == 'IFRAME'))
-                                CheckElementZIndex(mutation.target);
-                        }
-                    }
-                });
-                observer.observe(document.body, {childList: true, subtree: true, attributes: true}); // , attributeFilter: ['class', 'style']
+                    });
+                    observer.observe(document.body, {childList: true, subtree: true, attributes: true}); // , attributeFilter: ['class', 'style']
+                }
             }
-        }
-        function ApplyZIndexFix(){
-            if(!appliedfix){
-                if(observer)
-                    observer.disconnect();
-                $style.innerHTML += 'html > body{z-index: 0 !important;position: relative !important;}';
+            function ApplyZIndexFix(){
+                if(!appliedfix){
+                    if(observer)
+                        observer.disconnect();
+                    $style.innerHTML += 'html > body{z-index: 0 !important;position: relative !important;}';
 
-                // Fix mightytext.net/web8/ and w3schools.com/html/tryit.asp?filename=tryhtml_default and potentially other fullpage applications
-                if(document.body.offsetHeight < 200)
-                    $style.innerHTML += 'html, body{height: 100%;}';
+                    // Fix mightytext.net/web8/ and w3schools.com/html/tryit.asp?filename=tryhtml_default and potentially other fullpage applications
+                    if(document.body.offsetHeight < 200)
+                        $style.innerHTML += 'html, body{height: 100%;}';
 
-                appliedfix = true;
+                    appliedfix = true;
+                }
             }
+
+            // Run observer only when body exists
+            if(document.body)
+                StartObservingZIndex();
+            else
+                window.addEventListener('DOMContentLoaded', StartObservingZIndex);
         }
-
-        // Run observer only when body exists
-        if(document.body)
-            StartObservingZIndex();
-        else
-            window.addEventListener('DOMContentLoaded', StartObservingZIndex);
-
         // #endregion
     }
     // #endregion
