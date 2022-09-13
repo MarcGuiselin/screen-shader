@@ -51,99 +51,16 @@ var settings = {
         disableDeveloperWarning: false
     },
     saved = {
-        inst: GetInst(2),
         menuOpens: 0,
 
         showedLocationHint: false,
         warnedUserAboutNewTab: false
     };
 
-
-if(chrome.contextMenus && chrome.contextMenus.removeAll && chrome.contextMenus.onClicked){
-    chrome.contextMenus.removeAll(() => {
-        chrome.contextMenus.create({
-            title: 'Common Issues Page',
-            type: 'normal',
-            id: 'common-issues',
-            contexts: ['browser_action']
-        });
-        chrome.contextMenus.create({
-            title: 'Configure Keyboard Shortcuts',
-            type: 'normal',
-            id: 'configure-commands',
-            contexts: ['browser_action']
-        });
-        chrome.contextMenus.create({
-            title: '',
-            type: 'separator',
-            id: 'separator-1',
-            contexts: ['browser_action']
-        });
-        chrome.contextMenus.create({
-            title: 'Support Development',
-            type: 'normal',
-            id: 'support-development',
-            contexts: ['browser_action']
-        });
-    });
-
-    chrome.contextMenus.onClicked.addListener(({menuItemId}) => {
-        if(menuItemId == 'support-development')
-            chrome.tabs.create({url: 'https://bit.ly/screen-shader-donate', active: true});
-
-        else if (menuItemId == 'common-issues')
-            chrome.tabs.create({url: chrome.extension.getURL('common-issues.html'), active: true});
-
-        else if (menuItemId == 'configure-commands') {
-            let chromeVersion = /(Chrome|Chromium)\/([0-9]+)/.exec(navigator.userAgent);
-            // Open old or new extension shortcuts page
-            if(chromeVersion && parseInt(chromeVersion[2]) < 65)
-                chrome.tabs.create({url: 'chrome://extensions/configureCommands/#ScreenShader', active: true});
-            else
-                chrome.tabs.create({url: 'chrome://extensions/shortcuts', active: true});
-        }
-    });
-}
-
 // Grab options and stats, merge with default settings, and save
 chrome.storage.local.get(null, res => {
     settings = Object.assign(settings, res.settings);
     saved = Object.assign(saved, res.saved);
-
-    // Load old Screen Shader settings
-    if(localStorage.length){
-        let color = localStorage.getItem('color'),
-            darkness = parseFloat(localStorage.getItem('darkdim')),
-            colorBlending = localStorage.getItem('mixBlendMode');
-
-        settings.enabled = localStorage.getItem('ss_on') !== 'false';
-
-        if(color && /rgb\(\d+,\s*\d+,\s*\d+\)/.test(color.trim())){
-            color = color.replace(/rgb\(|\)|\s+/g, '').split(',').map(c => parseInt(c));
-            // Color is valid
-            if(color.every(c => c >= 0 && c <= 255)){
-                settings.color = color;
-                // If this color doesn't exist in our colors, create a custom color
-                let allColors = DEFAULTCOLORS.concat(settings.customColors);
-                if(allColors.every(color => color[0] != settings.color[0] || color[1] != settings.color[1] || color[2] != settings.color[2]))
-                    settings.customColors.push(color);
-            }
-        }
-
-        if(!isNaN(darkness))
-            settings.darkness = Math.min(MAXDARKNESS, Math.max(0, darkness));
-
-        if(colorBlending == 'multiply' || colorBlending == 'darken' || colorBlending == 'normal')
-            settings.colorBlending = colorBlending;
-        
-        localStorage.clear();
-    }
-
-    // Save
-    chrome.storage.local.set({
-        settings,
-        saved
-    });
 
     UpdateAllTabIcons(false);
 });
@@ -383,10 +300,6 @@ function SetGeoIpTime(){
         .then(() => {
             chrome.storage.local.set({settings});
         });
-}
-
-function GetInst(i){
-    return Math.floor(Date.now() / 234e6 - i);
 }
 
 function GetPercentInDay(d) {
