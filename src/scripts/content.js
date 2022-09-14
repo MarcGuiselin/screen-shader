@@ -735,7 +735,7 @@ if(
                 chrome.runtime.sendMessage({});
                 extensionDisabled = false;
             }catch(e){
-                extensionDisabled = e.message.startsWith('Invocation of form runtime.connect(null, )');
+                extensionDisabled = e.message.startsWith('Extension context invalidated');
                 // Remove shade from page if shade is disabled
                 if(extensionDisabled){
                     if($screenshader.parentElement)
