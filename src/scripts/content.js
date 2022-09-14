@@ -402,9 +402,9 @@ if(
 
                                 let algorithm = COLORALGORITHMS[settings.colorBlending] || COLORALGORITHMS.normal,
                                     solveColor = (r, g, b) => 'rgb(' +
-                                        Math.round(algorithm(r, settings.color[0], opacity) * (1 - settings.darkness)) + ', ' +
-                                        Math.round(algorithm(g, settings.color[1], opacity) * (1 - settings.darkness)) + ', ' +
-                                        Math.round(algorithm(b, settings.color[2], opacity) * (1 - settings.darkness)) + ')',
+                                        Math.round(algorithm(r, color[0], opacity) * (1 - settings.darkness)) + ', ' +
+                                        Math.round(algorithm(g, color[1], opacity) * (1 - settings.darkness)) + ', ' +
+                                        Math.round(algorithm(b, color[2], opacity) * (1 - settings.darkness)) + ')',
                                     color1 = solveColor(241, 241, 241),
                                     color2 = solveColor(210, 210, 210),
                                     color3 = solveColor(193, 193, 193),
