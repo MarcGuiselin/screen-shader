@@ -48,7 +48,6 @@ if(
         lastScrollbarSettings = '',
         mouseOverScrollbar = false,
         shadeElementInDom = false,
-        scrollbarsVisible = false,
 
         oldPageUrl = '',
         disabledByUrlMatch = false,
@@ -64,9 +63,6 @@ if(
         timeExpireTemporarySettings = 0,
         temporaryShade,
         temporaryColor,
-
-        domContentLoaded = false,
-        needToRunScrollbarOverride = true,
 
         scrollArrowDrawCanvas;
 
@@ -94,7 +90,7 @@ if(
     if(!INIFRAME){
         // If scrollbars suddenly become visible, shade them immediately
         window.addEventListener('resize', e => {
-            if(e.isTrusted && settings && settings.shadedScrollbar && !mouseOverScrollbar && scrollbarsVisible != (window.innerWidth != $html.clientWidth || window.innerHeight != $html.clientHeight))
+            if(e.isTrusted && settings && settings.shadedScrollbar && !mouseOverScrollbar)
                 window.requestAnimationFrame(UpdateShade);
         });
 
@@ -315,12 +311,6 @@ if(
         }
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-        domContentLoaded = true;
-        CustomScrollbarOverride();
-    });
-
-
     // #region Functions
     function UpdateShade(){
         // Prevent Shade from updating too often
@@ -387,165 +377,148 @@ if(
 
                 // Shaded scrollbars are only for non-iframes
                 if(!INIFRAME && settings.shadedScrollbar && !$fs && enabled){
-                    scrollbarsVisible = (window.innerWidth != $html.clientWidth || window.innerHeight != $html.clientHeight);
-                    if(scrollbarsVisible){
-                        // Only update scrollbars if the color changed and the mouse isn't above them and there even are scrollbars
-                        let newScrollbarSettings = newRGBAColor + settings.colorBlending + settings.darkness;
-                        if(newScrollbarSettings != lastScrollbarSettings && !mouseOverScrollbar){
-                            lastScrollbarSettings = newScrollbarSettings;
+                    // Only update scrollbars if the color changed and the mouse isn't above them and there even are scrollbars
+                    let newScrollbarSettings = newRGBAColor + settings.colorBlending + settings.darkness;
+                    if(newScrollbarSettings != lastScrollbarSettings && !mouseOverScrollbar){
+                        lastScrollbarSettings = newScrollbarSettings;
 
-                            if(opacity == 0 && settings.darkness == 0){
-                                $scrollbarstyle.innerHTML = '';
-                            }else{
-                                if(!scrollArrowDrawCanvas)
-                                    scrollArrowDrawCanvas = document.createElement('canvas');
+                        if(opacity == 0 && settings.darkness == 0){
+                            $scrollbarstyle.innerHTML = '';
+                        }else{
+                            if(!scrollArrowDrawCanvas)
+                                scrollArrowDrawCanvas = document.createElement('canvas');
+                            // <meta content="dark" name="color-scheme">
+                            let algorithm = COLORALGORITHMS[settings.colorBlending] || COLORALGORITHMS.normal,
+                                lightness = 1 - settings.darkness,
+                                solveColor = (w) => `rgb(${color.map(c => Math.round(algorithm(w, c, opacity) * lightness)).join(',')})`,
+                                color1 = solveColor(241),
+                                color2 = solveColor(210),
+                                color3 = solveColor(193),
+                                color4 = solveColor(80),
+                                color5 = solveColor(120),
+                                ctx = scrollArrowDrawCanvas.getContext('2d'),
+                                scrollbarButtonVerticalUpURL, scrollbarButtonVerticalDownURL, scrollbarButtonHorizontalUpURL, scrollbarButtonHorizontalDownURL;
 
-                                let algorithm = COLORALGORITHMS[settings.colorBlending] || COLORALGORITHMS.normal,
-                                    solveColor = (r, g, b) => 'rgb(' +
-                                        Math.round(algorithm(r, color[0], opacity) * (1 - settings.darkness)) + ', ' +
-                                        Math.round(algorithm(g, color[1], opacity) * (1 - settings.darkness)) + ', ' +
-                                        Math.round(algorithm(b, color[2], opacity) * (1 - settings.darkness)) + ')',
-                                    color1 = solveColor(241, 241, 241),
-                                    color2 = solveColor(210, 210, 210),
-                                    color3 = solveColor(193, 193, 193),
-                                    color4 = solveColor(168, 168, 168),
-                                    color5 = solveColor(120, 120, 120),
-                                    ctx = scrollArrowDrawCanvas.getContext('2d'),
-                                    scrollbarButtonVerticalUpURL, scrollbarButtonVerticalDownURL, scrollbarButtonHorizontalUpURL, scrollbarButtonHorizontalDownURL;
+                            // Setup canvas to draw vertical arrows on scrollbars
+                            scrollArrowDrawCanvas.width = 7;
+                            scrollArrowDrawCanvas.height = 5;
+                            ctx.fillStyle = color4;
 
-                                // Setup canvas to draw vertical arrows on scrollbars
-                                scrollArrowDrawCanvas.width = 7;
-                                scrollArrowDrawCanvas.height = 4;
-                                ctx.fillStyle = color4;
+                            // Clear canvas, draw triangle and grab URL
+                            ctx.clearRect(0, 0, 7, 5);
+                            ctx.fillRect(0, 4, 7, 1);
+                            ctx.fillRect(1, 3, 5, 1);
+                            ctx.fillRect(2, 2, 3, 1);
+                            ctx.fillRect(3, 1, 1, 1);
+                            scrollbarButtonVerticalUpURL = scrollArrowDrawCanvas.toDataURL();
 
-                                // Clear canvas, draw triangle and grab URL
-                                ctx.clearRect(0, 0, 7, 4);
-                                ctx.beginPath();
-                                ctx.moveTo(0, 4);
-                                ctx.lineTo(3.5, 0);
-                                ctx.lineTo(7, 4);
-                                ctx.closePath();
-                                ctx.fill();
-                                scrollbarButtonVerticalUpURL = scrollArrowDrawCanvas.toDataURL();
+                            // Clear canvas, draw triangle and grab URL
+                            ctx.clearRect(0, 0, 7, 5);
+                            ctx.fillRect(0, 0, 7, 1);
+                            ctx.fillRect(1, 1, 5, 1);
+                            ctx.fillRect(2, 2, 3, 1);
+                            ctx.fillRect(3, 3, 1, 1);
+                            scrollbarButtonVerticalDownURL = scrollArrowDrawCanvas.toDataURL();
 
-                                // Clear canvas, draw triangle and grab URL
-                                ctx.clearRect(0, 0, 7, 4);
-                                ctx.beginPath();
-                                ctx.moveTo(0, 0);
-                                ctx.lineTo(3.5, 4);
-                                ctx.lineTo(7, 0);
-                                ctx.closePath();
-                                ctx.fill();
-                                scrollbarButtonVerticalDownURL = scrollArrowDrawCanvas.toDataURL();
+                            // Setup canvas to draw horizontal arrows on scrollbars
+                            scrollArrowDrawCanvas.width = 5;
+                            scrollArrowDrawCanvas.height = 7;
 
-                                // Setup canvas to draw horizontal arrows on scrollbars
-                                scrollArrowDrawCanvas.width = 4;
-                                scrollArrowDrawCanvas.height = 7;
-                                ctx.fillStyle = color4;
+                            // Clear canvas, draw triangle and grab URL
+                            ctx.clearRect(0, 0, 5, 7);
+                            ctx.fillRect(3, 0, 1, 7);
+                            ctx.fillRect(2, 1, 1, 5);
+                            ctx.fillRect(1, 2, 1, 3);
+                            ctx.fillRect(0, 3, 1, 1);
+                            scrollbarButtonHorizontalUpURL = scrollArrowDrawCanvas.toDataURL();
 
-                                // Clear canvas, draw triangle and grab URL
-                                ctx.clearRect(0, 0, 4, 7);
-                                ctx.beginPath();
-                                ctx.moveTo(4, 0);
-                                ctx.lineTo(0, 3.5);
-                                ctx.lineTo(4, 7);
-                                ctx.closePath();
-                                ctx.fill();
-                                scrollbarButtonHorizontalUpURL = scrollArrowDrawCanvas.toDataURL();
+                            // Clear canvas, draw triangle and grab URL
+                            ctx.clearRect(0, 0, 5, 7);
+                            ctx.fillRect(1, 0, 1, 7);
+                            ctx.fillRect(2, 1, 1, 5);
+                            ctx.fillRect(3, 2, 1, 3);
+                            ctx.fillRect(4, 3, 1, 1);
+                            scrollbarButtonHorizontalDownURL = scrollArrowDrawCanvas.toDataURL();
 
-                                // Clear canvas, draw triangle and grab URL
-                                ctx.clearRect(0, 0, 4, 7);
-                                ctx.beginPath();
-                                ctx.moveTo(0, 0);
-                                ctx.lineTo(4, 3.5);
-                                ctx.lineTo(0, 7);
-                                ctx.closePath();
-                                ctx.fill();
-                                scrollbarButtonHorizontalDownURL = scrollArrowDrawCanvas.toDataURL();
+                            const targetTag = ':root.ss-shaded-scrollbars';
 
-                                const targetTag = ':root.ss-shaded-scrollbars';
+                            // Set style
+                            $scrollbarstyle.innerHTML = `
+                                ${targetTag}::-webkit-scrollbar {
+                                    background: ${color1} !important;
+                                    width: 17px !important;
+                                    height: 17px !important;
+                                    -webkit-appearance: unset !important;
+                                }
 
-                                // Set style
-                                $scrollbarstyle.innerHTML = `
-                                    ${targetTag}::-webkit-scrollbar {
-                                        background: ${color1} !important;
-                                        width: 17px !important;
-                                        height: 17px !important;
-                                        -webkit-appearance: unset !important;
-                                    }
+                                ${targetTag}::-webkit-scrollbar-track {
+                                    background: transparent !important;
+                                }
 
-                                    ${targetTag}::-webkit-scrollbar-track {
-                                        background: transparent !important;
-                                    }
+                                ${targetTag}::-webkit-scrollbar-corner{
+                                    background: ${color2} !important;
+                                    box-shadow: none !important;
+                                    border-radius: unset !important;
+                                }
 
-                                    ${targetTag}::-webkit-scrollbar-corner{
-                                        background: ${color2} !important;
-                                        box-shadow: none !important;
-                                        border-radius: unset !important;
-                                    }
+                                ${targetTag}::-webkit-scrollbar-thumb{
+                                    background: ${color3} !important;
+                                    border: 2px solid ${color1} !important;
+                                    box-shadow: none !important;
+                                    border-radius: unset !important;
+                                }
+                                ${targetTag}::-webkit-scrollbar-thumb:vertical{
+                                    border-bottom-width: 0 !important;
+                                    border-top-width: 0 !important;
+                                }
+                                ${targetTag}::-webkit-scrollbar-thumb:horizontal{
+                                    border-left-width: 0 !important;
+                                    border-right-width: 0 !important;
+                                }
+                                ${targetTag}::-webkit-scrollbar-thumb:hover {
+                                    background: ${color4} !important;
+                                }
+                                ${targetTag}::-webkit-scrollbar-thumb:active {
+                                    background: ${color5} !important;
+                                }
 
-                                    ${targetTag}::-webkit-scrollbar-thumb{
-                                        background: ${color3} !important;
-                                        border: 2px solid ${color1} !important;
-                                        box-shadow: none !important;
-                                        border-radius: unset !important;
-                                    }
-                                    ${targetTag}::-webkit-scrollbar-thumb:vertical{
-                                        border-bottom-width: 0 !important;
-                                        border-top-width: 0 !important;
-                                    }
-                                    ${targetTag}::-webkit-scrollbar-thumb:horizontal{
-                                        border-left-width: 0 !important;
-                                        border-right-width: 0 !important;
-                                    }
-                                    ${targetTag}::-webkit-scrollbar-thumb:hover {
-                                        background: ${color4} !important;
-                                    }
-                                    ${targetTag}::-webkit-scrollbar-thumb:active {
-                                        background: ${color5} !important;
-                                    }
-
-                                    ${targetTag}::-webkit-scrollbar-button{
-                                        background-color: ${color1} !important;
-                                        background-repeat: no-repeat !important;
-                                        background-position: center !important;
-                                        box-shadow: none !important;
-                                        border-radius: unset !important;
-                                    }
-                                    ${targetTag}::-webkit-scrollbar-button:active{
-                                        background-color: ${color5} !important; /* also arrow image should be white */
-                                    }
-                                    ${targetTag}::-webkit-scrollbar-button:hover{
-                                        background-color: ${color2} !important;
-                                    }
+                                ${targetTag}::-webkit-scrollbar-button{
+                                    background-color: ${color1} !important;
+                                    background-repeat: no-repeat !important;
+                                    background-position: center !important;
+                                    box-shadow: none !important;
+                                    border-radius: unset !important;
+                                }
+                                ${targetTag}::-webkit-scrollbar-button:active{
+                                    background-color: ${color5} !important; /* also arrow image should be white */
+                                }
+                                ${targetTag}::-webkit-scrollbar-button:hover{
+                                    background-color: ${color2} !important;
+                                }
 
 
-                                    ${targetTag}::-webkit-scrollbar-button:vertical:decrement {
-                                        background-image: url(${scrollbarButtonVerticalUpURL}) !important;
-                                    }
-                                    ${targetTag}::-webkit-scrollbar-button:vertical:increment {
-                                        background-image: url(${scrollbarButtonVerticalDownURL}) !important;
-                                    }
-                                    ${targetTag}::-webkit-scrollbar-button:horizontal:decrement {
-                                        background-image: url(${scrollbarButtonHorizontalUpURL}) !important;
-                                    }
-                                    ${targetTag}::-webkit-scrollbar-button:horizontal:increment {
-                                        background-image: url(${scrollbarButtonHorizontalDownURL}) !important;
-                                    }
-                                `;
-                                
-                                // Chrome doesn't update the scrollbar colors even when the css changes
-                                // Hacky force browser to redraw scrollbar from https://stackoverflow.com/questions/5170779#answer-15603340
-                                $html.classList.remove('ss-shaded-scrollbars');
-                                $html.offsetHeight;
-                            }
+                                ${targetTag}::-webkit-scrollbar-button:vertical:decrement {
+                                    background-image: url(${scrollbarButtonVerticalUpURL}) !important;
+                                }
+                                ${targetTag}::-webkit-scrollbar-button:vertical:increment {
+                                    background-image: url(${scrollbarButtonVerticalDownURL}) !important;
+                                }
+                                ${targetTag}::-webkit-scrollbar-button:horizontal:decrement {
+                                    background-image: url(${scrollbarButtonHorizontalUpURL}) !important;
+                                }
+                                ${targetTag}::-webkit-scrollbar-button:horizontal:increment {
+                                    background-image: url(${scrollbarButtonHorizontalDownURL}) !important;
+                                }
+                            `;
+                            
+                            // Chrome doesn't update the scrollbar colors even when the css changes
+                            // Hacky force browser to redraw scrollbar from https://stackoverflow.com/questions/5170779#answer-15603340
+                            $html.classList.remove('ss-shaded-scrollbars');
+                            $html.offsetHeight;
                         }
-                        
-                        
-                        $html.classList.add('ss-shaded-scrollbars');
-
-                        CustomScrollbarOverride();
                     }
+                    
+                    $html.classList.add('ss-shaded-scrollbars');
                 }
             }
         }
@@ -690,25 +663,7 @@ if(
         if(!pageloaded){
             // Page is fully loaded
             pageloaded = true;
-            domContentLoaded = true;
             window.requestAnimationFrame(UpdateShade);
-        }
-    }
-
-    function CustomScrollbarOverride(){
-        if(needToRunScrollbarOverride && (domContentLoaded || pageloaded) && scrollbarsVisible){
-            needToRunScrollbarOverride = false;
-
-            let old = $html.style.overflow,
-                oldX = $html.style.overflowX,
-                oldY = $html.style.overflowY;
-            $html.style.overflow = 'hidden';
-            $html.style.overflowX = 'hidden';
-            $html.style.overflowY = 'hidden';
-            $html.offsetHeight;
-            $html.style.overflow = old;
-            $html.style.overflowX = oldX;
-            $html.style.overflowY = oldY;
         }
     }
 
