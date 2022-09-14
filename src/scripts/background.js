@@ -1,12 +1,10 @@
 // ============================
 // Screen Shader
-// Copyright 2019 Marc Guiselin
+// Copyright 2022 Marc Guiselin
 // ============================
 
-const
-    SELFURL = chrome.extension.getURL(''),
-
-    DEFAULTCOLORS = [
+const SELFURL = chrome.runtime.getURL('')
+const DEFAULTCOLORS = [
         [255, 129, 0],
         [255, 147, 41],
         [255, 165, 0],
@@ -18,14 +16,14 @@ const
         [245, 214, 91],
         [255, 191, 250],
         [145, 214, 243]
-    ],
-    MAXSHADE = .8, 
-    MAXDARKNESS = .6,
+    ]
+const MAXSHADE = .8
+const MAXDARKNESS = .6
 
-    LENGTHSLEEP = 9.18/24,
-    TRANSITIONSPEEDS = [0, .04/24, .3/24, 1/24, 1.6/24];
-
-var settings = {
+const LENGTHSLEEP = 9.18/24
+const TRANSITIONSPEEDS = [0, .04/24, .3/24, 1/24, 1.6/24]
+    
+const DEFAULT_SETTINGS = {
         color: [255, 147, 41],
         customColors: [],
         enabled: true, // False if ss is not enabled, true if ss is enabled, or a time when screen shader should turn on
@@ -49,51 +47,186 @@ var settings = {
 
         disabledSites: [], // 'example.com', '*://*.google.com/*'
         disableDeveloperWarning: false
-    },
-    saved = {
+    }
+const DEFAULT_SAVED = {
         menuOpens: 0,
 
         showedLocationHint: false,
         warnedUserAboutNewTab: false
-    };
+    }
 
-// Grab options and stats, merge with default settings, and save
-chrome.storage.local.get(null, res => {
-    settings = Object.assign(settings, res.settings);
-    saved = Object.assign(saved, res.saved);
+// #region Functions
+/**
+ * Promisifies chrome.storage.local.get
+ * @returns {Promise<Object>} containing all local storage objects
+ */
+const getLocalStorage = () => 
+    new Promise(resolve => chrome.storage.local.get(null, resolve))
 
-    UpdateAllTabIcons(false);
-});
+/**
+ * Promisifies chrome.storage.local.get
+ * @returns {Promise<undefined>}
+ */
+const setLocalStorage = (data) => 
+    new Promise(resolve => chrome.storage.local.set(data, resolve))
+
+/**
+ * Sets the location setting using geoip data
+ * Returned promise will wait for geoip fetch to fail or succeed, or 1500ms whichever comes first
+ * @returns {Promise<undefined>}
+ */
+const setLocationFromGeoIp = () => 
+    new Promise(async (resolve) => {
+        setTimeout(resolve, 1500) // TODO: test
+
+        try {
+            const response = await fetch('http://www.geoplugin.net/json.gp')
+            const json = await response.json()
+        
+            const geo = {}
+            for(const key of Object.keys(json)){
+                const simpkey = key.replace('geoplugin_', '')
+                geo[simpkey] = ['latitude', 'longitude'].includes(simpkey) ? parseFloat(json[key]) : json[key]
+            }
+        
+            if(geo.latitude && geo.longitude && geo.countryName){
+                const { settings } = await getLocalStorage()
+                settings.hasLocation = true
+                settings.latitude = geo.latitude
+                settings.longitude = geo.longitude
+                if(!geo.city && !geo.regionCode)
+                    settings.locationName = 'Unidentified public network in ' + geo.countryName
+                else
+                    settings.locationName = (geo.city || geo.regionName || geo.regionCode) + ', ' + geo.countryName
+                await setLocalStorage({ settings })
+            }else{
+                throw Error()
+            }
+        }catch(error){
+            const { settings } = await getLocalStorage()
+            settings.hasLocation = false
+            settings.locationName = 'Could not determine location'
+            settings.latitude = 0
+            settings.longitude = 0
+            await setLocalStorage({ settings })
+        }
+        resolve()
+    })
+
+const isShadeableTab = (url) => 
+    url.trim() && !url.includes('://chrome.google.com/webstore') && 
+    !url.startsWith('chrome://') && !(url.startsWith('chrome-extension://') && !url.startsWith(SELFURL))
+
+/**
+ * Promisifies chrome.windows.getAll
+ * @returns Promise<TabDetails[]>
+ */
+const getAllTabs = () => 
+    new Promise(resolve => 
+        chrome.windows.getAll({ populate: true }, windows => 
+            resolve(windows.flatMap(window => window.tabs))))
+
+/**
+ * Is screen shader enabled?
+ * @param {Object} Settings 
+ * @returns {Boolean}
+ */
+const isScreenShaderEnabled = ({ enabled }) =>
+    typeof enabled == 'boolean' ? enabled : enabled < Date.now()
+
+const getDisabledSitePatterns = (settings) =>
+    settings.disabledSites.map(pattern => 
+        new RegExp(
+            '^[^/]*' + pattern
+            .replace(/\./g, '\\.') // Escape dots
+            .replace(/^(?:\*\\\.)?([^/]+)(.*?)\/?\*?$/, (_, domain, path) => // Split into domain and path, removing /* at the end, and *. at the start
+                domain
+                    .replace(/\*/g, '[^/]*')                    // \* is regex for [^/]*
+                + path
+                    .replace(/\/\*\//g, '(?:\\/.+\\/|\\/)')     // /*/ is regex for (?:\/.+\/|\/)  so it matches no path \/ or other \/.+\/
+                    .replace(/\*\//g, '.*\\/')                  // */ is regex for .*\/
+                    .replace(/\/\*/g, '\\/.*')                  // /* is regex for \/.*
+            )
+        )
+    )
+
+/**
+ * Update the browser action icon for a tab
+ */
+const updateTabIcon = (screenShaderEnabled, disabledSitePatterns, saved, tabId, url) => {
+    if(screenShaderEnabled){
+        const lurl = url.toLowerCase()
+        
+        if(!saved.warnedUserAboutNewTab && lurl.startsWith('chrome://newtab')){
+            chrome.action.setBadgeText({text: '!!', tabId})
+            chrome.action.setBadgeBackgroundColor({color: '#FF0000', tabId})
+        }
+
+        if(isShadeableTab(lurl)){
+            const disabled = disabledSitePatterns.some(patterns => patterns.test(lurl))
+            if(disabled){
+                chrome.action.setIcon({path: '/img/grey19.png', tabId})
+                chrome.action.setTitle({title: 'Screen Shader is disabled on this site', tabId})
+            }else{
+                chrome.action.setIcon({path: '/img/icon19.png', tabId})
+                chrome.action.setTitle({title: 'Screen Shader is enabled', tabId})
+            }
+        }else{
+            chrome.action.setIcon({path: '/img/grey19.png', tabId})
+            chrome.action.setTitle({title: 'Screen Shader can\'t work on this page', tabId})
+        }
+    }else{
+        chrome.action.setIcon({path: '/img/grey19.png', tabId})
+        chrome.action.setTitle({title: 'Screen Shader is disabled', tabId})
+    }
+}
+
+/**
+ * Update the browser action icon for all tabs
+ */
+const updateAllTabIcons = async () => {
+    const [{ settings, saved }, tabs] = await Promise.all([getLocalStorage(), getAllTabs()])
+    const screenShaderEnabled = isScreenShaderEnabled(settings)
+    const disabledSitePatterns = getDisabledSitePatterns(settings)
+
+    tabs.forEach(tab =>
+        updateTabIcon(screenShaderEnabled, disabledSitePatterns, saved, tab.id, tab.url))
+}
+
+const o = (n) => (n + 10) % 1
+
+const getPercentInDay = (d) => (d - new Date(d).setHours(0,0,0,0)) / 86400000
+// #endregion
 
 // Whenever settings change
-chrome.storage.onChanged.addListener(changes => {
-    if(changes.saved){
-        let newSaved = changes.saved.newValue;
+chrome.storage.onChanged.addListener(async changes => {
+    if(changes.saved?.oldValue){
+        const { newValue, oldValue } = changes.saved
 
-        // Clear badge text on new tab pages
-        if(newSaved.warnedUserAboutNewTab && !saved.warnedUserAboutNewTab)
-            UpdateAllTabIcons(true);
-
-        saved = newSaved;
+        // User was just warned about issues shading the new tab, so the exclamation points by the badge can be removed
+        if(newValue.warnedUserAboutNewTab && !oldValue.warnedUserAboutNewTab){
+            (await getAllTabs()).forEach((tab) => 
+                chrome.action.setBadgeText({ text: '', tabId: tab.id }))
+        }
     }
 
-    if(changes.settings){
-        let newSettings = changes.settings.newValue,
-            updateIcons = settings.enabled != newSettings.enabled || settings.disabledSites.some((v, i) => v != newSettings.disabledSites[i]);
-
-        settings = newSettings;
-
+    if(changes.settings?.oldValue){
+        const { newValue, oldValue } = changes.settings
+        
         // Update all icons if enabled or disabledSites changed
-        if(updateIcons)
-            UpdateAllTabIcons(false);
+        if(oldValue.enabled != newValue.enabled || oldValue.disabledSites.some((v, i) => v != newValue.disabledSites[i])){
+            updateAllTabIcons()
+        }
     }
-});
+})
 
 // Recieve keyboard shortcut commands
-chrome.commands.onCommand.addListener(command => {
+chrome.commands.onCommand.addListener(async command => {
+    const { settings } = await getLocalStorage()
+
     // Toggle Screen Shader on/off
     if(command == '0-toggle')
-        settings.enabled = !ScreenShaderEnabled();
+        settings.enabled = !isScreenShaderEnabled(settings);
 
     // Increase/decrease current shade
     else if(command == '1-increase-shade' || command == '2-decrease-shade'){
@@ -120,12 +253,12 @@ chrome.commands.onCommand.addListener(command => {
             Jset = (Math.acos((SunsetH - Math.sin(phi) * dec) / (Math.cos(phi) * Math.sqrt(1 - dec * dec))) + lw) / PI2 + Jtransit,
             Jrise = Jnoon - Jset + Jnoon,
 
-            whenSunrise = GetPercentInDay((Jrise - 2440587.5) * 86400000),
-            whenSunset = GetPercentInDay((Jset - 2440587.5) * 86400000),
+            whenSunrise = getPercentInDay((Jrise - 2440587.5) * 86400000),
+            whenSunset = getPercentInDay((Jset - 2440587.5) * 86400000),
             whenPolarNight = dec < 0 ? phi >= 0 : phi < 0;
 
         // Use modified algorithm to figure out what current shade setting to change
-        let n = GetPercentInDay(Date.now()),
+        let n = getPercentInDay(Date.now()),
     
             _noSunCycle = isNaN(whenSunrise) || whenSunrise == whenSunset,
             _midnightSun = _noSunCycle && !whenPolarNight,
@@ -196,18 +329,19 @@ chrome.commands.onCommand.addListener(command => {
 
         // Edit current shade
         let add = command == '1-increase-shade' ? 0.02 : -0.02;
+        let maxShade = settings.widerBlendingRange ? 1 : MAXSHADE
         if(currentShadeEditing == 'day'){
-            let shade = Math.max(0, Math.min(GetMaxShade(), settings.shadeDay + add));
+            let shade = Math.max(0, Math.min(maxShade, settings.shadeDay + add));
             settings.shadeDay = shade;
             settings.shadeNight = Math.max(settings.shadeNight, shade);
             settings.shadeSleep = Math.max(settings.shadeSleep, shade);
         }else if(currentShadeEditing == 'night'){
-            let shade = Math.max(0, Math.min(GetMaxShade(), settings.shadeNight + add));
+            let shade = Math.max(0, Math.min(maxShade, settings.shadeNight + add));
             settings.shadeDay = Math.min(settings.shadeDay, shade);
             settings.shadeNight = shade;
             settings.shadeSleep = Math.max(settings.shadeSleep, shade);
         }else if(currentShadeEditing == 'sleep'){
-            let shade = Math.max(0, Math.min(GetMaxShade(), settings.shadeSleep + add));
+            let shade = Math.max(0, Math.min(maxShade, settings.shadeSleep + add));
             settings.shadeDay = Math.min(settings.shadeDay, shade);
             settings.shadeNight = Math.min(settings.shadeNight, shade);
             settings.shadeSleep = shade;
@@ -231,159 +365,49 @@ chrome.commands.onCommand.addListener(command => {
     else if(command == '6-toggle-shaded-scrollbar')
         settings.shadedScrollbar = !settings.shadedScrollbar;
 
-    chrome.storage.local.set({settings});
-});
+    await setLocalStorage({ settings })
+})
 
 // On install
-chrome.runtime.onInstalled.addListener(({reason}) => {
+chrome.runtime.onInstalled.addListener(async ({ reason }) => {
+    let { settings, saved } = await getLocalStorage()
+
+    // Merge default settings with old
+    settings = Object.assign({}, DEFAULT_SETTINGS, settings)
+    saved = Object.assign({}, DEFAULT_SAVED, saved)
+    await setLocalStorage({ settings, saved })
+
+    // Try loading location before screenshader executes on all tabs
     if(!settings.hasLocation)
-        SetGeoIpTime();
+        await setLocationFromGeoIp()
 
     if(reason == 'install'){
-        // Wait for background page to set settings 
-        setTimeout(() => {
-            // Show install page
-            chrome.tabs.create({url: chrome.extension.getURL('welcome.html'), active: true});
+        // Show install page
+        await chrome.tabs.create({
+            url: chrome.runtime.getURL('welcome.html'),
+            active: true
+        })
 
-            // Inject content script into every page
-            chrome.tabs.query({}, tabs => {
-                for (let {id, url} of tabs) {
-                    if(IsValidUrl(url)){
-                        chrome.tabs.executeScript(id, { file: 'scripts/content.js' });
-                    }
-                }
-            });
-        }, 1500);
+        // Inject content script into every page
+        const tabs = await getAllTabs()
+        tabs.filter(tab => isShadeableTab(tab.url))
+            .forEach(tab => chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                files: ['scripts/content.js']
+            }))
     }
-});
+
+    await updateAllTabIcons()
+})
 
 // Whenever tab url updates update its icon
-chrome.tabs.onUpdated.addListener((tabId, _, {url}) => {
-    // If url of tab updated
-    if(url)
-        UpdateTabIcon(tabId, url);
-}); 
+chrome.tabs.onUpdated.addListener(async (tabId, _, { url }) => {
+    const { settings, saved } = await getLocalStorage()
+    const screenShaderEnabled = isScreenShaderEnabled(settings)
+    const disabledSitePatterns = getDisabledSitePatterns(settings)
 
-// Open up google form when someone uninstalls
-// chrome.runtime.setUninstallURL('https://goo.gl/X2svhA');
-
-
-// #region Functions
-function SetGeoIpTime(){
-    fetch('http://www.geoplugin.net/json.gp')
-        .then(response => response.json())
-        .then(response => {
-            let geo = {};
-            for(let key of Object.keys(response)){
-                let simpkey = key.replace('geoplugin_', '');
-                geo[simpkey] = ['latitude', 'longitude'].includes(simpkey) ? parseFloat(response[key]) : response[key];
-            }
-
-            if(geo.latitude && geo.longitude && geo.countryName){
-                settings.hasLocation = true;
-                settings.latitude = geo.latitude;
-                settings.longitude = geo.longitude;
-                if(!geo.city && !geo.regionCode)
-                    settings.locationName = 'Unidentified public network in ' + geo.countryName;
-                else
-                    settings.locationName = (geo.city || geo.regionName || geo.regionCode) + ', ' + geo.countryName;
-            }else{
-                throw Error();
-            }
-        })
-        .catch(() => {
-            settings.hasLocation = false;
-            settings.locationName = 'Could not determine location';
-            settings.latitude = 0;
-            settings.longitude = 0;
-        })
-        .then(() => {
-            chrome.storage.local.set({settings});
-        });
-}
-
-function GetPercentInDay(d) {
-    let e = new Date(d);
-    return (d - e.setHours(0,0,0,0)) / 86400000;
-}
-
-function o(n){
-    return (n + 10) % 1;
-}
-
-function GetMaxShade(){
-    return settings.widerBlendingRange ? 1 : MAXSHADE;
-}
-
-function UpdateAllTabIcons(clearBadgeText){
-    // Update every tab's icons
-    chrome.windows.getAll({populate: true}, windows => {
-        for(let window of windows){
-            for(let {id: tabId, url} of window.tabs){
-                UpdateTabIcon(tabId, url);
-                if(clearBadgeText)
-                    chrome.browserAction.setBadgeText({text: '', tabId});
-            }
-        }
-    });
-}
-
-function IsValidUrl(url){
-    return url.trim() && !url.includes('://chrome.google.com/webstore') && !url.startsWith('chrome://') && !(url.startsWith('chrome-extension://') && !url.startsWith(SELFURL));
-}
-
-function ScreenShaderEnabled(){
-    return typeof settings.enabled == 'boolean' ? settings.enabled : settings.enabled < Date.now();
-}
-
-function CheckUrlMatchDisabled(url){
-    let testurl = url.replace(/^https?:\/\//, '');
-    return settings.disabledSites.some(pattern => 
-        new RegExp(
-            '^[^/]*' + pattern
-            .replace(/\./g, '\\.') // Escape dots
-            .replace(/^(?:\*\\\.)?([^/]+)(.*?)\/?\*?$/, (_, domain, path) => // Split into domain and path, removing /* at the end, and *. at the start
-                domain
-                    .replace(/\*/g, '[^/]*')                    // \* is regex for [^/]*
-                + path
-                    .replace(/\/\*\//g, '(?:\\/.+\\/|\\/)')     // /*/ is regex for (?:\/.+\/|\/)  so it matches no path \/ or other \/.+\/
-                    .replace(/\*\//g, '.*\\/')                  // */ is regex for .*\/
-                    .replace(/\/\*/g, '\\/.*')                  // /* is regex for \/.*
-            )
-        ).test(testurl)
-    );
-}
-
-
-function UpdateTabIcon(tabId, url){
-    if(ScreenShaderEnabled()){
-        let lurl = url.toLowerCase(),
-            valid = IsValidUrl(lurl);
-        
-        if(!saved.warnedUserAboutNewTab && lurl.startsWith('chrome://newtab')){
-            chrome.browserAction.setBadgeText({text: '!!', tabId});
-            chrome.browserAction.setBadgeBackgroundColor({color: '#FF0000', tabId});
-        }
-
-        if(valid){
-            if(CheckUrlMatchDisabled(lurl)){
-                chrome.browserAction.setIcon({path: 'img/grey19.png', tabId});
-                chrome.browserAction.setTitle({title: 'Screen Shader is disabled on this site', tabId});
-            }else{
-                chrome.browserAction.setIcon({path: 'img/icon19.png', tabId});
-                chrome.browserAction.setTitle({title: 'Screen Shader is enabled', tabId});
-            }
-        }else{
-            chrome.browserAction.setIcon({path: 'img/grey19.png', tabId});
-            chrome.browserAction.setTitle({title: 'Screen Shader can\'t work on this page', tabId});
-        }
-    }else{
-        chrome.browserAction.setIcon({path: 'img/grey19.png', tabId});
-        chrome.browserAction.setTitle({title: 'Screen Shader is disabled', tabId});
-    }
-}
-// #endregion
-
+    updateTabIcon(screenShaderEnabled, disabledSitePatterns, saved, tabId, url)
+})
 
 console.log(`here, have a cupcake:
 
@@ -412,4 +436,4 @@ console.log(`here, have a cupcake:
         00   00   0   00   0    0   00
          0    00  00  00  00   00   0
          00    0   0  00  0   00  00
-          0000000000000000000000000`);
+          0000000000000000000000000`)

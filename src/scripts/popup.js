@@ -7,7 +7,7 @@
 
 // Constants
 const
-    SELFURL = chrome.extension.getURL(''),
+    SELFURL = chrome.runtime.getURL(''),
     TORADS = Math.PI / 180,
 
     GEOMAPWIDTH = 536,
@@ -252,7 +252,10 @@ let settings = {},
 // #region Run Everything
 
 // Get selectedTabUrl and selectedTabMatchPattern and determine if this is a page this chrome extension can work on
-chrome.tabs.getSelected(tab => {
+chrome.tabs.query({ 
+    active: true,
+    currentWindow: true,
+}, ([tab]) => {
     let url = tab && tab.url;
     if(url){
         selectedTabUrl = url.replace(/^https?:\/\//, '').toLowerCase();
@@ -362,7 +365,10 @@ document.addEventListener('got-settings', () => {
 
     // Show new tab hint if it hasn't been shown yet
     if(!saved.warnedUserAboutNewTab){
-        chrome.tabs.getSelected(tab => {
+        chrome.tabs.query({ 
+            active: true,
+            currentWindow: true,
+        }, ([tab]) => {
             if(tab && tab.url && tab.url.toLowerCase().startsWith('chrome://newtab')){
                 showedNewTabHint = true;
                 $body.classList.add('show-new-tab-hint');
@@ -1830,7 +1836,7 @@ $settingResetSettings.addEventListener('click', () => {
 });
 
 $settingIssueResolutionPage.addEventListener('click', () => {
-    chrome.tabs.create({url: chrome.extension.getURL('common-issues.html'), active: true});
+    chrome.tabs.create({url: chrome.runtime.getURL('common-issues.html'), active: true});
 });
 
 // #endregion

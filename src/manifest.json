@@ -2,10 +2,10 @@
     "name": "Screen Shader | Smart Screen Tinting",
     "short_name": "Screen Shader",
     "version": "2.0.90",
-    "manifest_version": 2,
+    "manifest_version": 3,
     "offline_enabled": true,
     "description": "Shades Chrome to a soothing orange color to decrease eye-strain, eye fatigue and to appease your brain's day/night cycle.",
-    "browser_action": {
+    "action": {
         "default_icon": {
             "19": "img/grey19.png",
             "38": "img/icon38.png"
@@ -13,8 +13,7 @@
         "default_popup": "popup.html"
     },
     "background": {
-        "persistent": true,
-        "scripts": ["scripts/background.js"]
+        "service_worker": "scripts/background.js"
     },
     "icons": {
         "16": "img/icon16.png",
@@ -45,11 +44,14 @@
     "permissions": [
         "tabs",
         "storage",
+        "scripting"
+    ],
+    "host_permissions": [
         "file:///*",
         "<all_urls>"
     ],
     "incognito": "spanning",
-    "minimum_chrome_version": "57",
+    "minimum_chrome_version": "88",
     "commands": {
         "0-toggle": {
             "suggested_key": {
