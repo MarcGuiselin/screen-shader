@@ -686,18 +686,7 @@ if(
         // This timer will be started by OnWebkitFullscreenChange for iframes
         if(!INIFRAME){
             // Test if the extension was disabled or uninstalled
-            try{
-                chrome.runtime.sendMessage({});
-                extensionDisabled = false;
-            }catch(e){
-                extensionDisabled = e.message.startsWith('Extension context invalidated');
-                // Remove shade from page if shade is disabled
-                if(extensionDisabled){
-                    if($screenshader.parentElement)
-                        $screenshader.parentElement.removeChild($screenshader);
-                    $html.classList.remove('ss-shaded-scrollbars');
-                }
-            }
+            TestExtensionEnabled();
 
             // Run an interval that updates the shade when the page is visible
             // This timer will be started by OnWebkitFullscreenChange for iframes
@@ -709,6 +698,21 @@ if(
             }else{
                 if(!updateShadeInterval)
                     updateShadeInterval = setInterval(() => window.requestAnimationFrame(UpdateShade), UPDATESHADETIME);
+            }
+        }
+    }
+
+    async function TestExtensionEnabled(){
+        try{
+            await chrome.runtime.sendMessage({});
+            extensionDisabled = false;
+        }catch(e){
+            extensionDisabled = e.message.startsWith('Extension context invalidated');
+            // Remove shade from page if shade is disabled
+            if(extensionDisabled){
+                if($screenshader.parentElement)
+                    $screenshader.parentElement.removeChild($screenshader);
+                $html.classList.remove('ss-shaded-scrollbars');
             }
         }
     }
