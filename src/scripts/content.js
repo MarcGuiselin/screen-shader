@@ -83,9 +83,7 @@ if(
     // #region Event listeneners
     document.addEventListener('visibilitychange', OnVisibilityChange);
 
-    document.addEventListener('fullscreenchange', OnWebkitFullscreenChange, false);
-    document.addEventListener('webkitfullscreenchange', OnWebkitFullscreenChange, false);
-    document.addEventListener('mozfullscreenchange', OnWebkitFullscreenChange, false);
+    document.addEventListener('fullscreenchange', OnFullscreenChange, false);
 
     if(!INIFRAME){
         // If scrollbars suddenly become visible, shade them immediately
@@ -178,7 +176,7 @@ if(
                 }
 
                 // Set screen shader as last element in html immediately
-                if(!GetFullscreenElement())
+                if(!document.fullscreenElement)
                     $html.appendChild($screenshader);
             }else{
                 window.requestAnimationFrame(BodyExistsChecker);
@@ -321,7 +319,7 @@ if(
 
         // Only update the shade if the page is visible, or if the shade element wasn't appended to the page when it should have been
         if(settings && (!document.hidden || (!INIFRAME && !shadeElementInDom)) && !extensionDisabled){
-            let $fs = GetFullscreenElement();
+            let $fs = document.fullscreenElement;
 
             // Detect url changes
             let newPageUrl = location.href.toLowerCase();
@@ -683,13 +681,13 @@ if(
         UpdateShade();
 
         // Run an interval that updates the shade when the page is visible
-        // This timer will be started by OnWebkitFullscreenChange for iframes
+        // This timer will be started by OnFullscreenChange for iframes
         if(!INIFRAME){
             // Test if the extension was disabled or uninstalled
             TestExtensionEnabled();
 
             // Run an interval that updates the shade when the page is visible
-            // This timer will be started by OnWebkitFullscreenChange for iframes
+            // This timer will be started by OnFullscreenChange for iframes
             if(document.hidden){
                 if(updateShadeInterval){
                     clearInterval(updateShadeInterval);
@@ -717,12 +715,12 @@ if(
         }
     }
 
-    function OnWebkitFullscreenChange(){
+    function OnFullscreenChange(){
         window.requestAnimationFrame(UpdateShade);
         
         // Run an interval that updates the shade when this iframe is fullscreen
         if(INIFRAME){
-            if(!GetFullscreenElement()){
+            if(!document.fullscreenElement){
                 if(updateShadeInterval){
                     clearInterval(updateShadeInterval);
                     updateShadeInterval = undefined;
@@ -734,16 +732,12 @@ if(
         }
     }
 
-    function GetFullscreenElement(){
-        return document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-    }
-
     function GetStyle($el, css) {
         return document.defaultView.getComputedStyle($el, null).getPropertyValue(css);
     }
 
     function CheckUrlMatchDisabled(){
-        let url = location.href.substr(location.protocol == 'file:' ? 0 : location.protocol.length + 2).toLowerCase();
+        let url = location.href.substring(location.protocol == 'file:' ? 0 : location.protocol.length + 2).toLowerCase();
         disabledByUrlMatch = settings.disabledSites.some(pattern => 
             new RegExp(
                 '^[^/]*' + pattern

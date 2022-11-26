@@ -540,7 +540,7 @@ function UrlMatchIsValid(pattern){
     pattern = pattern.trim().toLowerCase();
 
     if(pattern.startsWith('file:///')){
-        pattern = pattern.substr(8);
+        pattern = pattern.substring(8);
         if(pattern == '')
             return false;
 
