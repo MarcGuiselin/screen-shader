@@ -356,6 +356,12 @@ if(
                 let enabledIsBool = typeof settings.enabled == 'boolean',
                     enabled = disabledByUrlMatch ? false : (enabledIsBool ? settings.enabled : settings.enabled < now);
 
+                // Disable Screen Shader in fullscreen mode
+                if(!settings.shadeFullscreen && ($fs || window.innerHeight == screen.height && window.innerWidth == screen.width)){
+                    enabled = false;
+                    $html.classList.remove('ss-shaded-scrollbars');
+                }
+
                 // Enable the shade as soon as the timer runs out
                 if(!disabledByUrlMatch && !enabledIsBool && !enabled && settings.enabled - now < UPDATESHADETIME)
                     setTimeout(() => window.requestAnimationFrame(UpdateShade), settings.enabled - now);

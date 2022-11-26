@@ -31,6 +31,7 @@ const DEFAULT_SETTINGS = {
         colorBlending: 'multiply',
         transitionSpeed: 3,
         shadedScrollbar: true,
+        shadeFullscreen: true,
         widerBlendingRange: false,
 
         hasLocation: false,
@@ -364,6 +365,10 @@ chrome.commands.onCommand.addListener(async command => {
     // Toggle Shaded Scrollbar on and off
     else if(command == '6-toggle-shaded-scrollbar')
         settings.shadedScrollbar = !settings.shadedScrollbar;
+
+    // Toggle Shaded Scrollbar on and off
+    else if(command == '7-toggle-shade-fullscreen')
+        settings.shadeFullscreen = !settings.shadeFullscreen;
 
     await setLocalStorage({ settings })
 })

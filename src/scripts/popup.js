@@ -74,6 +74,7 @@ const
         colorBlending: 'multiply',
         transitionSpeed: 3,
         shadedScrollbar: true,
+        shadeFullscreen: true,
         widerBlendingRange: false,
 
         hasLocation: false,
@@ -175,6 +176,7 @@ const
     $settingTransitionSpeed = document.getElementById('setting-transition-speed'),
     $settingColorBlending = document.getElementById('setting-color-blending'),
     $settingShadedScrollbar = document.getElementById('setting-shaded-scrollbar'),
+    $settingShadeFullscreen = document.getElementById('setting-shade-fullscreen'),
     $settingWiderBlendingRange = document.getElementById('setting-wider-blending-range'),
     $settingDisableDeveloperWarning = document.getElementById('setting-disable-developer-warning'),
     $settingEditKeyboardShortcut = document.getElementById('settings-edit-keyboard-shortcut'),
@@ -1772,6 +1774,7 @@ $settingTransitionSpeed.addEventListener('change', () => {
 });
 $settingColorBlending.addEventListener('change', () => ChangeSettings({colorBlending: $settingColorBlending.value}));
 $settingShadedScrollbar.addEventListener('change', () => ChangeSettings({shadedScrollbar: $settingShadedScrollbar.checked}));
+$settingShadeFullscreen.addEventListener('change', () => ChangeSettings({shadeFullscreen: $settingShadeFullscreen.checked}));
 $settingWiderBlendingRange.addEventListener('change', () => {
     let checked = $settingWiderBlendingRange.checked;
 
@@ -2219,6 +2222,7 @@ function UpdateUI(){
     $settingTransitionSpeed.value = settings.transitionSpeed;
     $settingColorBlending.value = settings.colorBlending;
     $settingShadedScrollbar.checked = !!settings.shadedScrollbar;
+    $settingShadeFullscreen.checked = !!settings.shadeFullscreen;
     $settingWiderBlendingRange.checked = !!settings.widerBlendingRange;
     $settingDisableDeveloperWarning.checked = !!settings.disableDeveloperWarning;
 }

@@ -82,6 +82,9 @@
         },
         "6-toggle-shaded-scrollbar": {
             "description": "Toggle Shaded Scrollbar on and off"
+        },
+        "7-toggle-shade-fullscreen": {
+            "description": "Toggle Shade Fullscreen on and off"
         }
     }
 }
